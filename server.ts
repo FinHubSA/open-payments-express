@@ -4,9 +4,9 @@ import path from "path";
 import {
   createIncomingPayment,
   createOutgoingPayment,
-  createQoute,
+  createQuote,
   getAuthenticatedClient,
-  getOutgoingPaymentAuthorization,
+  createOutgoingPaymentPendingGrant,
   getWalletAddressInfo,
   processSubscriptionPayment,
 } from "./open-payments";
@@ -85,7 +85,7 @@ app.post(
 );
 
 app.post(
-  "/api/create-qoute",
+  "/api/create-quote",
   async (req: Request, res: Response): Promise<any> => {
     const { senderWalletAddress, incomingPaymentUrl } = req.body;
 
@@ -107,13 +107,13 @@ app.post(
         senderWalletAddress
       );
 
-      // create qoute
-      const qoute = await createQoute(
+      // create quote
+      const quote = await createQuote(
         client,
         incomingPaymentUrl,
         walletAddressDetails
       );
-      return res.status(200).json({ data: qoute });
+      return res.status(200).json({ data: quote });
     } catch (err: any) {
       console.error("Error creating incoming payment:", err);
       return res
@@ -128,7 +128,7 @@ app.post(
   async (req: Request, res: Response): Promise<any> => {
     const {
       senderWalletAddress,
-      qouteId,
+      quoteId,
       debitAmount,
       receiveAmount,
       type,
@@ -137,7 +137,7 @@ app.post(
       duration,
     } = req.body;
 
-    if (!senderWalletAddress || !qouteId) {
+    if (!senderWalletAddress || !quoteId) {
       return res.status(400).json({
         error: "Validation failed",
         message: "Please fill in all the required fields",
@@ -156,19 +156,20 @@ app.post(
       );
 
       // get outgoing payment auth actioning details
-      const outgoingPaymentAuthResponse = await getOutgoingPaymentAuthorization(
-        client,
-        {
-          qouteId,
-          debitAmount,
-          receiveAmount,
-          type,
-          payments,
-          redirectUrl,
-          duration,
-        },
-        walletAddressDetails
-      );
+      const outgoingPaymentAuthResponse =
+        await createOutgoingPaymentPendingGrant(
+          client,
+          {
+            quoteId,
+            debitAmount,
+            receiveAmount,
+            type,
+            payments,
+            redirectUrl,
+            duration,
+          },
+          walletAddressDetails
+        );
       return res.status(200).json({ data: outgoingPaymentAuthResponse });
     } catch (err: any) {
       console.error("Error creating incoming payment:", err);
@@ -185,12 +186,12 @@ app.post(
     const {
       senderWalletAddress,
       continueAccessToken,
-      qouteId,
+      quoteId,
       interactRef,
       continueUri,
     } = req.body;
 
-    if (!senderWalletAddress || !qouteId) {
+    if (!senderWalletAddress || !quoteId) {
       return res.status(400).json({
         error: "Validation failed",
         message: "Please fill in all the required fields",
@@ -202,14 +203,24 @@ app.post(
       // Initialize Open Payments client
       const client = await getAuthenticatedClient();
 
+      // get wallet details
+      const { walletAddressDetails } = await getWalletAddressInfo(
+        client,
+        senderWalletAddress
+      );
+
       // create outgoing payment resource
-      const outgoingPaymentResponse = await createOutgoingPayment(client, {
-        senderWalletAddress,
-        continueAccessToken,
-        qouteId,
-        interactRef,
-        continueUri,
-      });
+      const outgoingPaymentResponse = await createOutgoingPayment(
+        client,
+        {
+          senderWalletAddress,
+          continueAccessToken,
+          quoteId,
+          interactRef,
+          continueUri,
+        },
+        walletAddressDetails
+      );
 
       return res.status(200).json({ data: outgoingPaymentResponse });
     } catch (err: any) {
@@ -285,7 +296,7 @@ app.listen(PORT, () => {
     "  POST   /api/create-incoming-payment  - Create incoming payment resource on receiver account"
   );
   console.log(
-    "  POST   /api/create-qoute             - Create qoute resource on sender account"
+    "  POST   /api/create-quote             - Create quote resource on sender account"
   );
   console.log(
     "  POST   /api/outgoing-payment-auth    - Get continuation grant for an outgoing payment on the sender's account"

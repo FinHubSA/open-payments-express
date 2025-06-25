@@ -20,7 +20,7 @@ export async function getAuthenticatedClient() {
   }
 
   const client = await createAuthenticatedClient({
-    walletAddressUrl: process.env.OPEN_PAYMENTS_CLIENT_ADDRESS ?? "",
+    walletAddressUrl: walletAddress ?? "",
     privateKey: process.env.OPEN_PAYMENTS_SECRET_KEY_PATH ?? "",
     keyId: process.env.OPEN_PAYMENTS_KEY_ID ?? "",
   });
@@ -83,7 +83,7 @@ export async function createIncomingPayment(
   // create incoming payment
   const incomingPayment = await client.incomingPayment.create(
     {
-      url: new URL(walletAddressDetails.id).origin,
+      url: walletAddressDetails.resourceServer,
       accessToken: grant.access_token.value,
     },
     {
@@ -104,15 +104,15 @@ export async function createIncomingPayment(
 }
 
 /**
- * The method requests a grant to create a qoute on the senders resource server
- * The qoute is then created on the senders resource server
+ * The method requests a grant to create a quote on the senders resource server
+ * The quote is then created on the senders resource server
  *
  * @param client
- * @param incomingPaymentUrl - identifier for the incoming payment the qoute is being created for
+ * @param incomingPaymentUrl - identifier for the incoming payment the quote is being created for
  * @param walletAddressDetails - wallet address details for the sender
  * @returns
  */
-export async function createQoute(
+export async function createQuote(
   client: AuthenticatedClient,
   incomingPaymentUrl: string,
   walletAddressDetails: WalletAddress
@@ -120,7 +120,7 @@ export async function createQoute(
   console.log(">> Creating quoute");
   console.log(walletAddressDetails);
 
-  // Request Qoute grant
+  // Request Quote grant
   const grant = await client.grant.request(
     {
       url: walletAddressDetails.authServer,
@@ -141,10 +141,10 @@ export async function createQoute(
     throw new Error("Expected non-interactive grant");
   }
 
-  // create qoute
-  const qoute = await client.quote.create(
+  // create quote
+  const quote = await client.quote.create(
     {
-      url: new URL(walletAddressDetails.id).origin,
+      url: walletAddressDetails.resourceServer,
       accessToken: grant.access_token.value,
     },
     {
@@ -154,10 +154,10 @@ export async function createQoute(
     }
   );
 
-  console.log("<< Qoute created");
-  console.log(qoute);
+  console.log("<< Quote created");
+  console.log(quote);
 
-  return qoute;
+  return quote;
 }
 
 /**
@@ -166,11 +166,11 @@ export async function createQoute(
  * Tells the client to go ask sender for approval and details of where to come back to continue the process
  *
  * @param client
- * @param input - details from the qoute
+ * @param input - details from the quote
  * @param walletAddressDetails - wallet address details for the sender
  * @returns
  */
-export async function getOutgoingPaymentAuthorization(
+export async function createOutgoingPaymentPendingGrant(
   client: AuthenticatedClient,
   input: any,
   walletAddressDetails: WalletAddress
@@ -239,7 +239,8 @@ export async function getOutgoingPaymentAuthorization(
  */
 export async function createOutgoingPayment(
   client: AuthenticatedClient,
-  input: any
+  input: any,
+  walletAddressDetails: WalletAddress
 ) {
   let walletAddress = input.senderWalletAddress;
   if (walletAddress.startsWith("$"))
@@ -264,12 +265,12 @@ export async function createOutgoingPayment(
 
   const outgoingPayment = await client.outgoingPayment.create(
     {
-      url: new URL(walletAddress).origin,
+      url: walletAddressDetails.resourceServer,
       accessToken: grant.access_token.value, //OUTGOING_PAYMENT_ACCESS_TOKEN,
     },
     {
       walletAddress: walletAddress,
-      quoteId: input.qouteId, //QUOTE_URL,
+      quoteId: input.quoteId, //QUOTE_URL,
     }
   );
 
@@ -324,8 +325,8 @@ export async function processSubscriptionPayment(
     receiverWalletAddressDetails
   );
 
-  // create qoute
-  const quote = await createQoute(
+  // create quote
+  const quote = await createQuote(
     client,
     incomingPayment.id,
     senderWalletAddressDetails
@@ -335,7 +336,7 @@ export async function processSubscriptionPayment(
   try {
     const outgoingPayment = await client.outgoingPayment.create(
       {
-        url: new URL(senderWalletAddress).origin,
+        url: senderWalletAddressDetails.resourceServer,
         accessToken: token.access_token.value, //OUTGOING_PAYMENT_ACCESS_TOKEN,
       },
       {

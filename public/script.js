@@ -33,8 +33,8 @@ document
     };
   });
 
-document.getElementById("qoute").addEventListener("change", function () {
-  urlInput.value = window.location.href + "api/create-qoute";
+document.getElementById("quote").addEventListener("change", function () {
+  urlInput.value = window.location.href + "api/create-quote";
   bodyTextarea.json_value = {
     senderWalletAddress: "",
     incomingPaymentUrl: "",
@@ -47,7 +47,7 @@ document
     urlInput.value = window.location.href + "api/outgoing-payment-auth";
     bodyTextarea.json_value = {
       senderWalletAddress: "",
-      qouteId: "",
+      quoteId: "",
       receiveAmount: {
         value: "",
         assetCode: "",
@@ -74,7 +74,7 @@ document
       interactRef: "",
       continueAccessToken: "",
       continueUri: "",
-      qouteId: "",
+      quoteId: "",
     };
   });
 
