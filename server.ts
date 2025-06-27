@@ -219,7 +219,7 @@ app.post(
           interactRef,
           continueUri,
         },
-        senderWalletAddress
+        walletAddressDetails
       );
 
       return res.status(200).json({ data: outgoingPaymentResponse });
