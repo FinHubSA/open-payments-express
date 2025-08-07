@@ -32,12 +32,16 @@ export async function getWalletAddressInfo(
   client: AuthenticatedClient,
   walletAddress: string
 ): Promise<{ walletAddress: string; walletAddressDetails: WalletAddress }> {
-  if (walletAddress.startsWith("$"))
+  if (walletAddress && walletAddress.startsWith("$")) {
     walletAddress = walletAddress.replace("$", "https://");
+  }
 
-  const walletAddressDetails = await client.walletAddress.get({
+  const walletAddressDetails: WalletAddress = await client.walletAddress.get({
     url: walletAddress,
   });
+
+  console.log("<< Wallet address details");
+  console.log(walletAddressDetails);
 
   return { walletAddress, walletAddressDetails };
 }
@@ -76,7 +80,7 @@ export async function createIncomingPayment(
     }
   );
 
-  if (isPendingGrant(grant)) {
+  if (grant && isPendingGrant(grant)) {
     throw new Error("Expected non-interactive grant");
   }
 
@@ -137,7 +141,7 @@ export async function createQuote(
     }
   );
 
-  if (isPendingGrant(grant)) {
+  if (grant && isPendingGrant(grant)) {
     throw new Error("Expected non-interactive grant");
   }
 
@@ -174,7 +178,7 @@ export async function createOutgoingPaymentPendingGrant(
   client: AuthenticatedClient,
   input: any,
   walletAddressDetails: WalletAddress
-): Promise<PendingGrant> {
+): Promise<PendingGrant | undefined> {
   console.log(">> Getting link to authorize outgoing payment grant request");
   console.log(walletAddressDetails);
 
@@ -221,11 +225,11 @@ export async function createOutgoingPaymentPendingGrant(
     }
   );
 
-  if (!isPendingGrant(grant)) {
+  if (grant && !isPendingGrant(grant)) {
     throw new Error("Expected interactive grant");
   }
 
-  console.log("<< Link for authorization obtained");
+  console.log("<< Pending outgoing grant obtained");
   return grant;
 }
 
@@ -235,6 +239,7 @@ export async function createOutgoingPaymentPendingGrant(
  *
  * @param client
  * @param input
+ * @param walletAddressDetails - wallet address details for the sender
  * @returns
  */
 export async function createOutgoingPayment(
@@ -280,6 +285,13 @@ export async function createOutgoingPayment(
   return outgoingPayment;
 }
 
+/**
+ * This method creates an outgoing payment for a recurring payment
+ *
+ * @param client
+ * @param input
+ * @returns
+ */
 export async function processSubscriptionPayment(
   client: AuthenticatedClient,
   input: any

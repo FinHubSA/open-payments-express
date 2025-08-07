@@ -64,13 +64,13 @@ app.post(
 
       // get wallet details
       const { walletAddressDetails } = await getWalletAddressInfo(
-        client,
+        client!,
         receiverWalletAddress
       );
 
       // create incoming payment resource
       const incomingPayment = await createIncomingPayment(
-        client,
+        client!,
         amount,
         walletAddressDetails
       );
@@ -103,7 +103,7 @@ app.post(
 
       // get wallet details
       const { walletAddressDetails } = await getWalletAddressInfo(
-        client,
+        client!,
         senderWalletAddress
       );
 
@@ -151,7 +151,7 @@ app.post(
 
       // get wallet details
       const { walletAddressDetails } = await getWalletAddressInfo(
-        client,
+        client!,
         senderWalletAddress
       );
 
@@ -250,11 +250,14 @@ app.post(
       const client = await getAuthenticatedClient();
 
       // create outgoing authorization grant
-      const outgoingPaymentResponse = await processSubscriptionPayment(client, {
-        receiverWalletAddress,
-        manageUrl,
-        previousToken,
-      });
+      const outgoingPaymentResponse = await processSubscriptionPayment(
+        client!,
+        {
+          receiverWalletAddress,
+          manageUrl,
+          previousToken,
+        }
+      );
 
       return res.status(200).json({ data: outgoingPaymentResponse });
     } catch (err: any) {
