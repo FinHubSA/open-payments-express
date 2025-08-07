@@ -109,7 +109,7 @@ app.post(
 
       // create quote
       const quote = await createQuote(
-        client!,
+        client,
         incomingPaymentUrl,
         walletAddressDetails
       );
@@ -158,7 +158,7 @@ app.post(
       // get outgoing payment auth actioning details
       const outgoingPaymentAuthResponse =
         await createOutgoingPaymentPendingGrant(
-          client!,
+          client,
           {
             quoteId,
             debitAmount,
@@ -205,13 +205,13 @@ app.post(
 
       // get wallet details
       const { walletAddressDetails } = await getWalletAddressInfo(
-        client!,
+        client,
         senderWalletAddress
       );
 
       // create outgoing payment resource
       const outgoingPaymentResponse = await createOutgoingPayment(
-        client!,
+        client,
         {
           senderWalletAddress,
           continueAccessToken,
