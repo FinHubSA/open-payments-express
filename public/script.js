@@ -3,114 +3,88 @@ const methodSelect = document.getElementById("method");
 const urlInput = document.getElementById("url");
 const bodyGroup = document.getElementById("bodyGroup");
 const bodyTextarea = document.getElementById("body-json");
-const responseTextarea = document.getElementById("response-json");
-const responseContainer = document.getElementById("responseContainer");
+const jsonResponseContainer = document.getElementById(
+  "json-response-container"
+);
 const statusInfo = document.getElementById("statusInfo");
 
-// Show/hide body textarea based on HTTP method
-methodSelect.addEventListener("change", function () {
-  const method = this.value;
-  if (method === "GET" || method === "DELETE") {
-    bodyGroup.style.display = "none";
-  } else {
-    bodyGroup.style.display = "block";
+window.onload = renderAPIForms;
+
+const apiFormsOptions = {
+  iconlib: "fontawesome5",
+  object_layout: "normal",
+  show_errors: "interaction",
+  theme: "bootstrap4",
+};
+
+async function renderAPIForms() {
+  await renderAPIForm("access-incoming");
+  await renderAPIForm("access-quote");
+  await renderAPIForm("access-outgoing");
+  await renderAPIForm("continue");
+  await renderAPIForm("incoming-payment");
+  await renderAPIForm("quote");
+  await renderAPIForm("outgoing-payment");
+  await renderAPIForm("manage-token");
+  await renderAPIForm("cancel-access");
+  await renderAPIForm("wallet-address");
+}
+
+async function renderAPIForm(endpoint) {
+  // get the schema
+  const response = await axios.get(`/schemas/${endpoint}.json`);
+
+  if (response.status != 200) {
+    showResponse(response, 0);
+    return;
   }
-});
 
-document.getElementById("none").addEventListener("change", function () {
-  urlInput.value = "";
-  bodyTextarea.json_value = {};
-});
+  const grantRequestSchema = await response.data; // Parse as JSON
+  console.log(`** ${endpoint} request schema `);
+  console.log(grantRequestSchema);
 
-document
-  .getElementById("incoming_payment")
-  .addEventListener("change", function () {
-    urlInput.value = window.location.href + "api/create-incoming-payment";
-    bodyTextarea.json_value = {
-      senderWalletAddress: "",
-      receiverWalletAddress: "",
-      amount: "",
-    };
+  // create the ui form
+  const element = document.getElementById(`${endpoint}-holder`);
+  const editor = new JSONEditor(element, {
+    ...apiFormsOptions,
+    ...{ schema: grantRequestSchema },
   });
 
-document.getElementById("quote").addEventListener("change", function () {
-  urlInput.value = window.location.href + "api/create-quote";
-  bodyTextarea.json_value = {
-    senderWalletAddress: "",
-    incomingPaymentUrl: "",
-  };
-});
-
-document
-  .getElementById("outgoing_payment_auth")
-  .addEventListener("change", function () {
-    urlInput.value = window.location.href + "api/outgoing-payment-auth";
-    bodyTextarea.json_value = {
-      senderWalletAddress: "",
-      quoteId: "",
-      receiveAmount: {
-        value: "",
-        assetCode: "",
-        assetScale: 0,
-      },
-      debitAmount: {
-        value: "",
-        assetCode: "",
-        assetScale: 0,
-      },
-      type: "once_off",
-      payments: "1",
-      redirectUrl: window.location.href,
-      duration: "PT10M",
-    };
+  // set default
+  editor.on("ready", () => {
+    const defaultData = localStorage.getItem(endpoint);
+    if (defaultData) editor.setValue(JSON.parse(defaultData));
   });
 
-document
-  .getElementById("outgoing_payment")
-  .addEventListener("change", function () {
-    urlInput.value = window.location.href + "api/outgoing-payment";
-    bodyTextarea.json_value = {
-      senderWalletAddress: "",
-      interactRef: "",
-      continueAccessToken: "",
-      continueUri: "",
-      quoteId: "",
-    };
-  });
+  // listen for the submit event
+  document
+    .getElementById(`${endpoint}-submit`)
+    .addEventListener("click", function (event) {
+      makeRequest(event, "POST", endpoint, editor.getValue());
+    });
+}
 
-document
-  .getElementById("subscription_payment")
-  .addEventListener("change", function () {
-    urlInput.value = window.location.href + "api/subscription-payment";
-    bodyTextarea.json_value = {
-      receiverWalletAddress: "",
-      manageUrl: "",
-      previousToken: "",
-    };
-  });
+async function makeRequest(event, method, path, data) {
+  event.preventDefault();
 
-// Form submission
-const originalFormHandler = form.onsubmit;
-form.onsubmit = async function (e) {
-  e.preventDefault();
+  const baseUrl = "http://localhost:3001/api/";
+  let url = baseUrl + path;
 
-  const method = methodSelect.value;
-  const url = urlInput.value;
+  // store in local storage
+  localStorage.setItem(`${path}`, JSON.stringify(data));
 
-  // Collect headers (existing functionality)
-  const headers = { "Content-Type": "application/json" };
-
-  // Handle request body
-  let requestBody = bodyTextarea.json_value;
-
-  console.log(">> request body");
-  console.log(requestBody);
-
-  // Show loading state
-  statusInfo.innerHTML =
-    '<span class="status-badge status-info">Loading...</span>';
+  // Disable submit button
+  const submitBtn = event.target;
+  const originalText = submitBtn.textContent;
+  submitBtn.disabled = true;
+  submitBtn.innerHTML =
+    '<span class="spinner-border spinner-border-sm me-2"></span>';
 
   try {
+    // Collect headers (existing functionality)
+    const headers = { "Content-Type": "application/json" };
+
+    // build request config
     const config = {
       method: method,
       url: url,
@@ -119,37 +93,27 @@ form.onsubmit = async function (e) {
 
     config.timeout = 50000; // ms
     config.maxRedirects = 5;
+    config.data = JSON.stringify(data);
 
-    if (requestBody) {
-      config.data = requestBody;
-    }
+    console.log("** config");
+    console.log(config);
 
+    // make request
     const startTime = Date.now();
     const response = await axios(config);
     const endTime = Date.now();
     const duration = endTime - startTime;
 
-    // Display success response
-    console.log("<< request response");
-    console.log(response);
+    // show response
+    showResponse(response, duration);
 
-    const statusClass =
-      response.status >= 200 && response.status < 300
-        ? "status-success"
-        : "status-error";
-    statusInfo.innerHTML = `
-            <span class="status-badge ${statusClass}">${response.status} ${response.statusText}</span>
-            <span style="color: #a0aec0;">• ${duration}ms</span>
-        `;
-
-    responseTextarea.json_value = response.data;
-
+    // add to history
     addToHistory(
       {
         method: method,
         url: url,
         headers: headers,
-        data: requestBody,
+        data: data,
       },
       {
         status: response.status,
@@ -160,26 +124,37 @@ form.onsubmit = async function (e) {
       duration
     );
   } catch (error) {
-    // Display error response (existing error handling)
-    console.log("!! error");
+    console.log("** error");
     console.log(error);
 
-    statusInfo.innerHTML =
-      '<span class="status-badge status-error">Error</span>';
-
-    let errorData = null;
-
-    if (error.response) {
-      errorMessage = `${error.response.status} ${error.response.statusText}`;
-      errorData = error.response.data;
-      statusInfo.innerHTML = `<span class="status-badge status-error">${error.response.status} ${error.response.statusText}</span>`;
-    }
-
-    responseTextarea.json_value = errorData;
+    showResponse(error.response, 0);
+  } finally {
+    // Re-enable submit button
+    submitBtn.disabled = false;
+    submitBtn.textContent = originalText;
   }
-};
+}
 
-// Request history functionality
+function showResponse(response, duration) {
+  // Display success response
+  console.log("<< request response");
+  console.log(response);
+
+  const statusClass =
+    response.status >= 200 && response.status < 300
+      ? "status-success"
+      : "status-error";
+
+  statusInfo.innerHTML = `
+          <span class="status-badge ${statusClass}">${response.status} ${response.statusText}</span>
+          <span style="color: #a0aec0;">• ${duration}ms</span>
+      `;
+
+  if (response.data) jsonResponseContainer.data = response.data;
+}
+
+/** Request history functionality */
+
 const historyList = document.getElementById("historyList");
 const historyCount = document.getElementById("historyCount");
 const clearHistoryBtn = document.getElementById("clearHistoryBtn");
@@ -220,7 +195,7 @@ function addToHistory(request, response, duration) {
     duration: duration,
     timestamp: timestamp,
     request: request,
-    response: response,
+    response: response.data,
   };
 
   // Add to beginning of array (newest first)
@@ -277,7 +252,10 @@ function updateHistoryUI() {
       });
       historyItem.classList.add("active");
 
-      responseTextarea.json_value = item.response.data;
+      console.log("** history response");
+      console.log(item.response.data);
+
+      if (item.response.data) jsonResponseContainer.data = item.response.data;
     });
 
     historyList.appendChild(historyItem);
@@ -308,12 +286,12 @@ window.addEventListener("DOMContentLoaded", () => {
         method: "GET",
         url: window.location.href,
         headers: "",
-        data: { interactRef: interactRef, hash: hash },
+        data: { data: { interactRef: interactRef, hash: hash } },
       },
       {
         status: "200",
         statusText: "OK",
-        data: { interactRef: interactRef, hash: hash },
+        data: { data: { interactRef: interactRef, hash: hash } },
         headers: "",
       },
       0

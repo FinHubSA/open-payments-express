@@ -2,14 +2,28 @@ import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import path from "path";
 import {
-  createIncomingPayment,
-  createOutgoingPayment,
-  createQuote,
+  accessIncoming,
+  accessQuote,
+  accessOutgoing,
   getAuthenticatedClient,
-  createOutgoingPaymentPendingGrant,
-  getWalletAddressInfo,
-  processSubscriptionPayment,
-} from "./open-payments";
+  incomingPayment,
+  quote,
+  outgoingPayment,
+  continueAccess,
+  manageAccessToken,
+  cancelAccess,
+  walletAddress,
+} from "./services/open-payments";
+import { IncomingPayment } from "./types/incoming-payment";
+import { Quote } from "./types/quote";
+import { AccessIncoming } from "./types/access-incoming";
+import { AccessQuote } from "./types/access-quote";
+import { AccessOutgoing } from "./types/access-outgoing";
+import { OutgoingPayment } from "./types/outgoing-payment";
+import { Continue } from "./types/continue";
+import { ManageAccessToken } from "./types/manage-token";
+import { CancelGrant } from "./types/cancel-access";
+import { WalletAddress } from "./types/wallet-address";
 
 // Initialize express app
 const app = express();
@@ -46,225 +60,165 @@ app.get("/api/health", (req: Request, res: Response) => {
 // ============== ENDPOINTS ==============
 
 app.post(
-  "/api/create-incoming-payment",
+  "/api/wallet-address",
   async (req: Request, res: Response): Promise<any> => {
-    const { senderWalletAddress, receiverWalletAddress, amount } = req.body;
+    const input = req.body as WalletAddress;
 
-    if (!senderWalletAddress || !receiverWalletAddress || !amount) {
-      return res.status(400).json({
-        error: "Validation failed",
-        message: "Please fill in all the required fields",
-        received: req.body,
-      });
-    }
-
+    console.log("** input");
+    console.log(input);
     try {
-      // Initialize Open Payments client
-      const client = await getAuthenticatedClient();
-
-      // get wallet details
-      const { walletAddressDetails } = await getWalletAddressInfo(
-        client!,
-        receiverWalletAddress
-      );
-
-      // create incoming payment resource
-      const incomingPayment = await createIncomingPayment(
-        client!,
-        amount,
-        walletAddressDetails
-      );
-      return res.status(200).json({ data: incomingPayment });
+      const result = await walletAddress(input);
+      return res.status(200).json({ data: result });
     } catch (err: any) {
-      console.error("Error creating incoming payment:", err);
-      return res
-        .status(500)
-        .json({ error: "Failed to create incoming payment" });
+      console.error("Error requesting grant:", err);
+      return res.status(500).json({ error: err });
     }
   }
 );
 
 app.post(
-  "/api/create-quote",
+  "/api/access-incoming",
   async (req: Request, res: Response): Promise<any> => {
-    const { senderWalletAddress, incomingPaymentUrl } = req.body;
+    const input = req.body as AccessIncoming;
 
-    if (!senderWalletAddress || !incomingPaymentUrl) {
-      return res.status(400).json({
-        error: "Validation failed",
-        message: "Please fill in all the required fields",
-        received: req.body,
-      });
-    }
-
+    console.log("** input");
+    console.log(input);
     try {
-      // Initialize Open Payments client
-      const client = await getAuthenticatedClient();
-
-      // get wallet details
-      const { walletAddressDetails } = await getWalletAddressInfo(
-        client!,
-        senderWalletAddress
-      );
-
-      // create quote
-      const quote = await createQuote(
-        client,
-        incomingPaymentUrl,
-        walletAddressDetails
-      );
-      return res.status(200).json({ data: quote });
+      const result = await accessIncoming(input);
+      return res.status(200).json({ data: result });
     } catch (err: any) {
-      console.error("Error creating incoming payment:", err);
-      return res
-        .status(500)
-        .json({ error: "Failed to create incoming payment" });
+      console.error("Error requesting grant:", err);
+      return res.status(500).json({ error: err });
     }
   }
 );
 
 app.post(
-  "/api/outgoing-payment-auth",
+  "/api/access-quote",
   async (req: Request, res: Response): Promise<any> => {
-    const {
-      senderWalletAddress,
-      quoteId,
-      debitAmount,
-      receiveAmount,
-      type,
-      payments,
-      redirectUrl,
-      duration,
-    } = req.body;
+    const input = req.body as AccessQuote;
 
-    if (!senderWalletAddress || !quoteId) {
-      return res.status(400).json({
-        error: "Validation failed",
-        message: "Please fill in all the required fields",
-        received: req.body,
-      });
-    }
-
+    console.log("** input");
+    console.log(input);
     try {
-      // Initialize Open Payments client
-      const client = await getAuthenticatedClient();
-
-      // get wallet details
-      const { walletAddressDetails } = await getWalletAddressInfo(
-        client!,
-        senderWalletAddress
-      );
-
-      // get outgoing payment auth actioning details
-      const outgoingPaymentAuthResponse =
-        await createOutgoingPaymentPendingGrant(
-          client,
-          {
-            quoteId,
-            debitAmount,
-            receiveAmount,
-            type,
-            payments,
-            redirectUrl,
-            duration,
-          },
-          walletAddressDetails
-        );
-      return res.status(200).json({ data: outgoingPaymentAuthResponse });
+      const result = await accessQuote(input);
+      return res.status(200).json({ data: result });
     } catch (err: any) {
-      console.error("Error creating incoming payment:", err);
-      return res
-        .status(500)
-        .json({ error: "Failed to create incoming payment" });
+      console.error("Error requesting grant:", err);
+      return res.status(500).json({ error: err });
     }
   }
 );
+
+app.post(
+  "/api/access-outgoing",
+  async (req: Request, res: Response): Promise<any> => {
+    const input = req.body as AccessOutgoing;
+
+    console.log("** input");
+    console.log(input);
+    try {
+      const result = await accessOutgoing(input);
+      return res.status(200).json({ data: result });
+    } catch (err: any) {
+      console.error("Error requesting grant:", err);
+      return res.status(500).json({ error: err });
+    }
+  }
+);
+
+app.post("/api/continue", async (req: Request, res: Response): Promise<any> => {
+  const input = req.body as Continue;
+
+  console.log("** input");
+  console.log(input);
+  try {
+    const result = await continueAccess(input);
+    return res.status(200).json({ data: result });
+  } catch (err: any) {
+    console.error("Error requesting grant:", err);
+    return res.status(500).json({ error: err });
+  }
+});
+
+app.post(
+  "/api/manage-token",
+  async (req: Request, res: Response): Promise<any> => {
+    const input = req.body as ManageAccessToken;
+
+    console.log("** input");
+    console.log(input);
+    try {
+      const result = await manageAccessToken(input);
+      return res.status(200).json({ data: result });
+    } catch (err: any) {
+      console.error("Error rotating access token:", err);
+      return res.status(500).json({ error: err });
+    }
+  }
+);
+
+app.post(
+  "/api/cancel-access",
+  async (req: Request, res: Response): Promise<any> => {
+    const input = req.body as CancelGrant;
+
+    console.log("** input");
+    console.log(input);
+    try {
+      const result = await cancelAccess(input);
+      return res.status(200).json({ data: result });
+    } catch (err: any) {
+      console.error("Error rotating access token:", err);
+      return res.status(500).json({ error: err });
+    }
+  }
+);
+
+app.post(
+  "/api/incoming-payment",
+  async (req: Request, res: Response): Promise<any> => {
+    const input = req.body as IncomingPayment;
+
+    console.log("** input");
+    console.log(input);
+    try {
+      const result = await incomingPayment(input);
+      return res.status(200).json({ data: result });
+    } catch (err: any) {
+      console.error("Error creating incoming payment:", err);
+      return res.status(500).json({ error: err });
+    }
+  }
+);
+
+app.post("/api/quote", async (req: Request, res: Response): Promise<any> => {
+  const input = req.body as Quote;
+
+  console.log("** input");
+  console.log(input);
+  try {
+    const result = await quote(input);
+    return res.status(200).json({ data: result });
+  } catch (err: any) {
+    console.error("Error creating quote:", err);
+    return res.status(500).json({ error: err });
+  }
+});
 
 app.post(
   "/api/outgoing-payment",
   async (req: Request, res: Response): Promise<any> => {
-    const {
-      senderWalletAddress,
-      continueAccessToken,
-      quoteId,
-      interactRef,
-      continueUri,
-    } = req.body;
+    const input = req.body as OutgoingPayment;
 
-    if (!senderWalletAddress || !quoteId) {
-      return res.status(400).json({
-        error: "Validation failed",
-        message: "Please fill in all the required fields",
-        received: req.body,
-      });
-    }
-
+    console.log("** input");
+    console.log(input);
     try {
-      // Initialize Open Payments client
-      const client = await getAuthenticatedClient();
-
-      // get wallet details
-      const { walletAddressDetails } = await getWalletAddressInfo(
-        client,
-        senderWalletAddress
-      );
-
-      // create outgoing payment resource
-      const outgoingPaymentResponse = await createOutgoingPayment(
-        client,
-        {
-          senderWalletAddress,
-          continueAccessToken,
-          quoteId,
-          interactRef,
-          continueUri,
-        },
-        walletAddressDetails
-      );
-
-      return res.status(200).json({ data: outgoingPaymentResponse });
+      const result = await outgoingPayment(input);
+      return res.status(200).json({ data: result });
     } catch (err: any) {
-      console.error("Error creating incoming payment:", err);
-      return res
-        .status(500)
-        .json({ error: "Failed to create incoming payment" });
-    }
-  }
-);
-
-app.post(
-  "/api/subscription-payment",
-  async (req: Request, res: Response): Promise<any> => {
-    const { receiverWalletAddress, manageUrl, previousToken } = req.body;
-
-    if (!receiverWalletAddress || !manageUrl) {
-      return res.status(400).json({
-        error: "Validation failed",
-        message: "Please fill in all the required fields",
-        received: req.body,
-      });
-    }
-
-    try {
-      // Initialize Open Payments client
-      const client = await getAuthenticatedClient();
-
-      // create outgoing authorization grant
-      const outgoingPaymentResponse = await processSubscriptionPayment(
-        client!,
-        {
-          receiverWalletAddress,
-          manageUrl,
-          previousToken,
-        }
-      );
-
-      return res.status(200).json({ data: outgoingPaymentResponse });
-    } catch (err: any) {
-      console.error("Error creating incoming payment:", err);
-      return res
-        .status(500)
-        .json({ error: "Failed to create incoming payment" });
+      console.error("Error creating outgoing payment:", err);
+      return res.status(500).json({ error: err });
     }
   }
 );
@@ -295,20 +249,34 @@ app.listen(PORT, () => {
   console.log(`🚀 Express server running on http://localhost:${PORT}`);
   console.log(`🏥 Health check: http://localhost:${PORT}/api/health`);
   console.log("\n📋 Available endpoints:");
-  console.log(
-    "  POST   /api/create-incoming-payment  - Create incoming payment resource on receiver account"
-  );
+  console.log("  POST   /api/wallet-address           - Get wallet details");
   console.log(
     "  POST   /api/create-quote             - Create quote resource on sender account"
   );
   console.log(
-    "  POST   /api/outgoing-payment-auth    - Get continuation grant for an outgoing payment on the sender's account"
+    "  POST   /api/access-incoming          - Get a access token to create an incoming payment"
   );
   console.log(
-    "  POST   /api/outgoing-payment         - Create outgoing payment resource on sender's account"
+    "  POST   /api/access-quote             - Get a access token to create quote"
   );
   console.log(
-    "  POST   /api/subscription-payment     - Create an outgoing payment from an existing authorized recurring payment"
+    "  POST   /api/access-outgoing          - Get a access token to create an outgoing payment"
+  );
+  console.log(
+    "  POST   /api/continue                 - Continue to get an access token from a pending grant"
+  );
+  console.log(
+    "  POST   /api/manage-token             - Rotate or revoke an access token"
+  );
+
+  console.log(
+    "  POST   /api/incoming-payment         - Create an incoming payment resource"
+  );
+  console.log(
+    "  POST   /api/quote                    - Create a quote resource"
+  );
+  console.log(
+    "  POST   /api/outgoing-payment -token  - Create an outgoing payment resource"
   );
 });
 

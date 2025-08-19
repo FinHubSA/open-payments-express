@@ -45,6 +45,7 @@ select {
 }
 
 /* Basic styles */
+
 html {
   height: 100%;
 }
@@ -64,6 +65,27 @@ main {
   width: 100%;
   max-width: 40rem;
   padding: 3rem 2rem 4rem;
+}
+
+.btn {
+  background-color: var(--accent-color);
+  border: 0;
+  border-radius: var(--border-radius);
+  padding: 0.3rem 0.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  margin: 0.5rem;
+  margin-inline: auto;
+  width: fit-content;
+  transition:
+    color 200ms ease-in-out,
+    background-color 200ms ease-in-out;
+}
+
+.btn:hover,
+.btn:focus {
+  color: var(--background-color);
+  background-color: color-mix(in lch, var(--accent-color) 90%, black);
 }
 
 .feature-image {
@@ -140,25 +162,6 @@ input {
 label {
   display: block;
   margin-block-end: 0.5rem;
-}
-
-button {
-  background-color: var(--accent-color);
-  border: 0;
-  border-radius: var(--border-radius);
-  padding: 0.5rem 0.75rem;
-  font-size: 1.25rem;
-  cursor: pointer;
-  margin-block-start: 1.5rem;
-  margin-inline: auto;
-  display: block;
-  transition: color 200ms ease-in-out, background-color 200ms ease-in-out;
-}
-
-button:hover,
-button:focus {
-  color: var(--background-color);
-  background-color: color-mix(in lch, var(--accent-color) 90%, black);
 }
 
 form {
@@ -268,31 +271,56 @@ textarea {
   background: white;
 }
 
-.btn {
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  color: white;
+/* json editor */
+
+.je-switcher {
+  width: 100% !important;
+  padding: 0.2rem !important;
+}
+
+.je-object__title,
+.card-title {
+  font-size: 1.2rem;
+}
+
+.je-object__container p {
+  margin-top: 0.25rem;
+  font-size: 0.875em;
+  color: var(--bs-secondary-color);
+}
+
+/* Bootstrap */
+
+.accordion-header {
+  display: flex;
+}
+
+.accordion-header .btn {
+  margin: 0px;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.8rem;
+  margin-left: auto;
+  margin-right: 0;
+  border: none !important;
+  border-radius: 0;
+}
+
+.accordion-item {
   border: none;
-  padding: 1rem 2rem;
-  border-radius: 8px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  width: 100%;
 }
 
-.btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+.accordion-header {
+  border: 1px solid lightgrey !important;
+  border-radius: 4px;
+  overflow: hidden;
 }
 
-.btn:active {
-  transform: translateY(0);
-}
+/* Response JSON panel */
 
 .response-panel {
   margin-top: 20px;
 }
+
 .response-header {
   margin-bottom: 1rem;
   padding-bottom: 1rem;
@@ -330,17 +358,12 @@ textarea {
 
 .json-container {
   width: 100%;
-  height: 35vh;
-  margin-top: 10px;
-  background: #2d3748;
-  border-radius: 8px;
-  padding: 10px;
-  border: 1px solid #4a5568;
-  font-family: "Courier New", monospace;
-  font-size: 0.9rem;
-  line-height: 1.2;
-  white-space: nowrap; /* Prevents wrapping */
-  overflow-x: auto; /* Enables horizontal scroll */
+  height: fit-content;
+  font-size: medium;
+}
+
+.json-container .show-copy {
+  height: 100vh !important;
 }
 
 #response-json {
