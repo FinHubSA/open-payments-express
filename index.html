@@ -1,141 +1,392 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Open Payments Playground</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="json-editor.js"></script>
+    <script src="./lib/json-editor.js"></script>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/jsoneditor/10.3.0/jsoneditor.min.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.3/dist/flatpickr.min.css"
+    />
     <link rel="stylesheet" href="./styles.css" />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
+    <div class="header">
+      <h1>Open Payments Playground</h1>
+      <p>Interact with the Open Payments API</p>
+    </div>
     <div class="container">
       <div class="left-panel">
-        <div class="header">
-          <h1>Open Payments Playground</h1>
-          <p>Interact with the Open Payments API</p>
-        </div>
-
-        <form id="inputForm">
-          <div class="form-group">
-            <label for="method">HTTP Method</label>
-            <select style="padding: 8px" id="method" class="method-select">
-              <option value="GET">GET</option>
-              <option selected value="POST">POST</option>
-              <option value="PUT">PUT</option>
-              <option value="DELETE">DELETE</option>
-              <option value="PATCH">PATCH</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="url">API Endpoint URL</label>
-            <input
-              type="url"
-              id="url"
-              placeholder="http://localhost:3000/api/create-incoming-payment"
-              required
-            />
-          </div>
-
-          <div class="form-group">
-            <label>Templates</label>
-            <div class="radio-group">
-              <label class="radio-option">
-                <input
-                  id="none"
-                  type="radio"
-                  name="templateType"
-                  value="none"
-                  checked
-                />
-                <span class="radio-custom"></span>
-                None
-              </label>
-
-              <label class="radio-option">
-                <input
-                  id="incoming_payment"
-                  type="radio"
-                  name="templateType"
-                  value="incoming_payment"
-                />
-                <span class="radio-custom"></span>
-                Incoming Payment
-              </label>
-
-              <label class="radio-option">
-                <input
-                  id="quote"
-                  type="radio"
-                  name="templateType"
-                  value="quote"
-                />
-                <span class="radio-custom"></span>
-                Quote
-              </label>
-
-              <label class="radio-option">
-                <input
-                  id="outgoing_payment_auth"
-                  type="radio"
-                  name="templateType"
-                  value="outgoing_payment_auth"
-                />
-                <span class="radio-custom"></span>
-                Outgoing Payment Auth
-              </label>
-
-              <label class="radio-option">
-                <input
-                  id="outgoing_payment"
-                  type="radio"
-                  name="templateType"
-                  value="outgoing_payment"
-                />
-                <span class="radio-custom"></span>
-                Outgoing Payment
-              </label>
-
-              <label class="radio-option">
-                <input
-                  id="subscription_payment"
-                  type="radio"
-                  name="templateType"
-                  value="subscription_payment"
-                />
-                <span class="radio-custom"></span>
-                Subscription Payment
-              </label>
+        <div class="accordion accordion-flush" id="accordionExample">
+          <h4 class="border-bottom p-1">Wallet Address Server</h4>
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+              <div
+                class="accordion-button collapsed"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#wa"
+                aria-expanded="false"
+                aria-controls="wa"
+              >
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge bg-primary method-badge">GET</span>
+                  <code class="text-muted">/wallet-address</code>
+                </div>
+              </div>
+              <button
+                id="wallet-address-submit"
+                class="btn btn-secondary"
+                type="submit"
+              >
+                submit
+              </button>
+            </h2>
+            <div
+              id="wa"
+              class="accordion-collapse collapse"
+              aria-labelledby="headingOne"
+              data-bs-parent="#accordionExample"
+            >
+              <div id="wallet-address-holder" class="accordion-body"></div>
             </div>
           </div>
 
-          <div class="form-group" id="bodyGroup">
-            <label
-              >Request Body (JSON)
-              <json-editor
-                class="json-container"
-                id="body-json"
-                value=""
-                indent="3"
-              ></json-editor>
-            </label>
+          <h4 class="border-bottom p-1">Auth Server</h4>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+              <div
+                class="accordion-button collapsed"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#ai"
+                aria-expanded="false"
+                aria-controls="ai"
+              >
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge bg-success method-badge">POST</span>
+                  <code class="text-muted">/access-incoming</code>
+                </div>
+              </div>
+              <button
+                id="access-incoming-submit"
+                class="btn btn-secondary"
+                type="submit"
+              >
+                submit
+              </button>
+            </h2>
+            <div
+              id="ai"
+              class="accordion-collapse collapse"
+              aria-labelledby="headingOne"
+              data-bs-parent="#accordionExample"
+            >
+              <div id="access-incoming-holder" class="accordion-body"></div>
+            </div>
           </div>
 
-          <button type="submit" class="btn">Send Request</button>
-        </form>
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+              <div
+                class="accordion-button collapsed"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#aq"
+                aria-expanded="false"
+                aria-controls="aq"
+              >
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge bg-success method-badge">POST</span>
+                  <code class="text-muted">/access-quote</code>
+                </div>
+              </div>
+              <button
+                id="access-quote-submit"
+                class="btn btn-secondary"
+                type="submit"
+              >
+                submit
+              </button>
+            </h2>
+            <div
+              id="aq"
+              class="accordion-collapse collapse"
+              aria-labelledby="headingOne"
+              data-bs-parent="#accordionExample"
+            >
+              <div id="access-quote-holder" class="accordion-body"></div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+              <div
+                class="accordion-button collapsed"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#ao"
+                aria-expanded="false"
+                aria-controls="ao"
+              >
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge bg-success method-badge">POST</span>
+                  <code class="text-muted">/access-outgoing</code>
+                </div>
+              </div>
+              <button
+                id="access-outgoing-submit"
+                class="btn btn-secondary"
+                type="submit"
+              >
+                submit
+              </button>
+            </h2>
+            <div
+              id="ao"
+              class="accordion-collapse collapse"
+              aria-labelledby="headingOne"
+              data-bs-parent="#accordionExample"
+            >
+              <div id="access-outgoing-holder" class="accordion-body"></div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+              <div
+                class="accordion-button collapsed"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#c"
+                aria-expanded="false"
+                aria-controls="c"
+              >
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge bg-success method-badge">POST</span>
+                  <code class="text-muted">/continue</code>
+                </div>
+              </div>
+              <button
+                id="continue-submit"
+                class="btn btn-secondary"
+                type="submit"
+              >
+                submit
+              </button>
+            </h2>
+            <div
+              id="c"
+              class="accordion-collapse collapse"
+              aria-labelledby="headingOne"
+              data-bs-parent="#accordionExample"
+            >
+              <div id="continue-holder" class="accordion-body"></div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+              <div
+                class="accordion-button collapsed"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#rt"
+                aria-expanded="false"
+                aria-controls="rt"
+              >
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge bg-success method-badge">POST</span>
+                  <code class="text-muted">/manage-token</code>
+                </div>
+              </div>
+              <button
+                id="manage-token-submit"
+                class="btn btn-secondary"
+                type="submit"
+              >
+                submit
+              </button>
+            </h2>
+            <div
+              id="rt"
+              class="accordion-collapse collapse"
+              aria-labelledby="headingOne"
+              data-bs-parent="#accordionExample"
+            >
+              <div id="manage-token-holder" class="accordion-body"></div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+              <div
+                class="accordion-button collapsed"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#cg"
+                aria-expanded="false"
+                aria-controls="cg"
+              >
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge bg-danger method-badge">DELETE</span>
+                  <code class="text-muted">/cancel-access</code>
+                </div>
+              </div>
+              <button
+                id="cancel-access-submit"
+                class="btn btn-secondary"
+                type="submit"
+              >
+                submit
+              </button>
+            </h2>
+            <div
+              id="cg"
+              class="accordion-collapse collapse"
+              aria-labelledby="headingOne"
+              data-bs-parent="#accordionExample"
+            >
+              <div id="cancel-access-holder" class="accordion-body"></div>
+            </div>
+          </div>
+
+          <h4 class="border-bottom p-1">Resource Server</h4>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+              <div
+                class="accordion-button collapsed"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#ip"
+                aria-expanded="false"
+                aria-controls="ip"
+              >
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge bg-success method-badge">POST</span>
+                  <code class="text-muted">/incoming-payment</code>
+                </div>
+              </div>
+              <button
+                id="incoming-payment-submit"
+                class="btn btn-secondary"
+                type="submit"
+              >
+                submit
+              </button>
+            </h2>
+            <div
+              id="ip"
+              class="accordion-collapse collapse"
+              aria-labelledby="headingOne"
+              data-bs-parent="#accordionExample"
+            >
+              <div id="incoming-payment-holder" class="accordion-body"></div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+              <div
+                class="accordion-button collapsed"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#qt"
+                aria-expanded="false"
+                aria-controls="qt"
+              >
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge bg-success method-badge">POST</span>
+                  <code class="text-muted">/quote</code>
+                </div>
+              </div>
+              <button id="quote-submit" class="btn btn-secondary" type="submit">
+                submit
+              </button>
+            </h2>
+            <div
+              id="qt"
+              class="accordion-collapse collapse"
+              aria-labelledby="headingOne"
+              data-bs-parent="#accordionExample"
+            >
+              <div id="quote-holder" class="accordion-body"></div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+              <div
+                class="accordion-button collapsed"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#op"
+                aria-expanded="false"
+                aria-controls="op"
+              >
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge bg-success method-badge">POST</span>
+                  <code class="text-muted">/outgoing-payment</code>
+                </div>
+              </div>
+              <button
+                id="outgoing-payment-submit"
+                class="btn btn-secondary"
+                type="submit"
+              >
+                submit
+              </button>
+            </h2>
+            <div
+              id="op"
+              class="accordion-collapse collapse"
+              aria-labelledby="headingOne"
+              data-bs-parent="#accordionExample"
+            >
+              <div id="outgoing-payment-holder" class="accordion-body"></div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="right-panel">
         <!-- history section -->
         <div class="response-panel">
-          <div style="justify-content: space-between" class="response-header">
-            <h2>
+          <div
+            style="justify-content: space-between"
+            class="border-bottom response-header"
+          >
+            <h4>
               Response History
               <span id="historyCount" class="history-badge">0</span>
-            </h2>
+            </h4>
             <div>
-              <button id="clearHistoryBtn" class="history-clear-btn">
+              <button
+                id="clearHistoryBtn"
+                class="history-clear-btn badge bg-danger method-badge"
+              >
                 Clear All
               </button>
             </div>
@@ -148,23 +399,38 @@
         <!-- respone section -->
         <div class="response-panel">
           <div class="response-header">
-            <h2>Response</h2>
+            <h4 class="border-bottom p-2" style="width: 100%; margin-top: 2rem">
+              Response
+            </h4>
           </div>
           <div style="user-select: none" id="responseContainer">
             <div id="statusInfo" class="panel-empty">
-              Fill out the form on the left and click "Send Request"
+              Fill out any of the forms on the left and click "submit"
             </div>
-            <json-editor
+            <andypf-json-viewer
               class="json-container"
-              id="response-json"
-              value=""
-              contenteditable="false"
-              indent="3"
-            ></json-editor>
+              id="json-response-container"
+              indent="2"
+              expanded="true"
+              theme="classic-light"
+              show-data-types="false"
+              show-toolbar="false"
+              expand-icon-type="square"
+              show-copy="true"
+              show-size="false"
+            ></andypf-json-viewer>
           </div>
         </div>
       </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.3/dist/flatpickr.min.js"
+      integrity="sha256-/irFIZmSo2CKXJ4rxHWfrI+yGJuI16Z005X/bENdpTY="
+      crossorigin="anonymous"
+    ></script>
+    <script src="./lib/json-ui-editor.min.js"></script>
+    <script src="./lib/json-text-editor.min.js"></script>
     <script src="./script.js"></script>
   </body>
 </html>
