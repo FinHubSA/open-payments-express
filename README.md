@@ -10,7 +10,7 @@ Before you begin, you need to install the following tools:
 - [Node (>= v18.18)](https://nodejs.org/en/download/)
 - [Git](https://git-scm.com/downloads)
 
-## Quick Start
+## 🚀 Quickstart
 
 ### 1. Clone the repository
 
@@ -40,5 +40,44 @@ npm install
 # Development mode with auto-restart
 npm run dev
 ```
+This command does two things:
+- Runs `ts-node scripts/generate-schemas.ts`, which generates the latest schemas and TypeScript types from the definitions in `openapi`. It puts these files in the `public/schemas` folder and the `types` folder respectively.
+- Starts the development server so you can view the demo.
 
 The server will start on `http://localhost:3001`
+
+## 📂 Project Structure
+
+```
+├── openapi/ # JSON Schemas for the different servers
+│ ├── auth-server.json # Auth server schema
+│ ├── resource-server.json # Resource server schema
+│ └── wallet-address-server.json # Wallet address server schema
+│ 
+├── scripts/ # Build scripts for generating artifacts
+│ ├── generate-schemas.js # Generates TypeScript types and individual schemas to make for API call fields
+│ 
+├── services/ # Service layer for making Open Payments requests
+│ └── open-payments.ts
+│ |
+├── types/ # Generated types from the generate-schemas.js build script
+| |  ├── access-incoming.d.ts
+| |  ├── access-outgoing.d.ts
+| |  └── ...
+| 
+├── public/ # Frontend demo
+│ ├── schemas # Generated schemas from the generate-schemas.js build script
+| |  ├── access-incoming.json
+| |  ├── access-outgoing.json
+| |  └── ...
+| |
+│ ├── lib # javascript libraries for the UI
+| |  ├── json-text-editor.min.js # for the <andypf-json-viewer/> element which displays json responses
+| |  └── json-ui-editor.min.js # for rendering the html forms from the public/schemas folder
+| |
+│ ├── script.js # The logc for rendering forms, submitting, forms and request history
+│ └── style.css # The styling
+| |
+├── index.html # The main UI file for displaying the frontend
+└── ... # Other files for the project
+```
