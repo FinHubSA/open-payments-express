@@ -24,15 +24,19 @@
       href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.3/dist/flatpickr.min.css"
     />
     <link rel="stylesheet" href="./styles.css" />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
+    <div class="header">
+      <h1>Open Payments Playground</h1>
+      <p>Interact with the Open Payments API</p>
+    </div>
     <div class="container">
       <div class="left-panel">
-        <div class="header">
-          <h1>Open Payments Playground</h1>
-          <p>Interact with the Open Payments API</p>
-        </div>
-
         <div class="accordion accordion-flush" id="accordionExample">
           <h4 class="border-bottom p-1">Wallet Address Server</h4>
           <div class="accordion-item">
@@ -370,13 +374,19 @@
       <div class="right-panel">
         <!-- history section -->
         <div class="response-panel">
-          <div style="justify-content: space-between" class="response-header">
-            <h2>
+          <div
+            style="justify-content: space-between"
+            class="border-bottom response-header"
+          >
+            <h4>
               Response History
               <span id="historyCount" class="history-badge">0</span>
-            </h2>
+            </h4>
             <div>
-              <button id="clearHistoryBtn" class="history-clear-btn">
+              <button
+                id="clearHistoryBtn"
+                class="history-clear-btn badge bg-danger method-badge"
+              >
                 Clear All
               </button>
             </div>
@@ -389,7 +399,9 @@
         <!-- respone section -->
         <div class="response-panel">
           <div class="response-header">
-            <h2>Response</h2>
+            <h4 class="border-bottom p-2" style="width: 100%; margin-top: 2rem">
+              Response
+            </h4>
           </div>
           <div style="user-select: none" id="responseContainer">
             <div id="statusInfo" class="panel-empty">
@@ -400,7 +412,7 @@
               id="json-response-container"
               indent="2"
               expanded="true"
-              theme="monokai"
+              theme="classic-light"
               show-data-types="false"
               show-toolbar="false"
               expand-icon-type="square"
