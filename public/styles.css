@@ -317,7 +317,7 @@ form {
 
 .header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 0.5rem;
 }
 
 .header h1 {
@@ -369,6 +369,10 @@ textarea {
 }
 
 /* json editor */
+
+.je-modal .btn {
+  margin: 0.25rem;
+}
 
 .je-switcher {
   width: 100% !important;
