@@ -53,11 +53,11 @@
               >
                 <div class="d-flex align-items-center gap-2">
                   <span class="badge bg-primary method-badge">GET</span>
-                  <code class="text-muted">/wallet-address</code>
+                  <code class="text-muted">/wallet-address_get</code>
                 </div>
               </div>
               <button
-                id="wallet-address-submit"
+                id="wallet-address_get-submit"
                 class="btn btn-secondary"
                 type="submit"
               >
@@ -70,7 +70,7 @@
               aria-labelledby="headingOne"
               data-bs-parent="#accordionExample"
             >
-              <div id="wallet-address-holder" class="accordion-body"></div>
+              <div id="wallet-address_get-holder" class="accordion-body"></div>
             </div>
           </div>
 
@@ -82,17 +82,17 @@
                 class="accordion-button collapsed"
                 type="button"
                 data-bs-toggle="collapse"
-                data-bs-target="#ai"
+                data-bs-target="#gr"
                 aria-expanded="false"
-                aria-controls="ai"
+                aria-controls="gr"
               >
                 <div class="d-flex align-items-center gap-2">
                   <span class="badge bg-success method-badge">POST</span>
-                  <code class="text-muted">/access-incoming</code>
+                  <code class="text-muted">/grant_request</code>
                 </div>
               </div>
               <button
-                id="access-incoming-submit"
+                id="grant_request-submit"
                 class="btn btn-secondary"
                 type="submit"
               >
@@ -100,12 +100,12 @@
               </button>
             </h2>
             <div
-              id="ai"
+              id="gr"
               class="accordion-collapse collapse"
               aria-labelledby="headingOne"
               data-bs-parent="#accordionExample"
             >
-              <div id="access-incoming-holder" class="accordion-body"></div>
+              <div id="grant_request-holder" class="accordion-body"></div>
             </div>
           </div>
 
@@ -115,17 +115,17 @@
                 class="accordion-button collapsed"
                 type="button"
                 data-bs-toggle="collapse"
-                data-bs-target="#aq"
+                data-bs-target="#gco"
                 aria-expanded="false"
-                aria-controls="aq"
+                aria-controls="gco"
               >
                 <div class="d-flex align-items-center gap-2">
                   <span class="badge bg-success method-badge">POST</span>
-                  <code class="text-muted">/access-quote</code>
+                  <code class="text-muted">/grant_continue</code>
                 </div>
               </div>
               <button
-                id="access-quote-submit"
+                id="grant_continue-submit"
                 class="btn btn-secondary"
                 type="submit"
               >
@@ -133,12 +133,12 @@
               </button>
             </h2>
             <div
-              id="aq"
+              id="gco"
               class="accordion-collapse collapse"
               aria-labelledby="headingOne"
               data-bs-parent="#accordionExample"
             >
-              <div id="access-quote-holder" class="accordion-body"></div>
+              <div id="grant_continue-holder" class="accordion-body"></div>
             </div>
           </div>
 
@@ -148,116 +148,17 @@
                 class="accordion-button collapsed"
                 type="button"
                 data-bs-toggle="collapse"
-                data-bs-target="#ao"
+                data-bs-target="#gca"
                 aria-expanded="false"
-                aria-controls="ao"
-              >
-                <div class="d-flex align-items-center gap-2">
-                  <span class="badge bg-success method-badge">POST</span>
-                  <code class="text-muted">/access-outgoing</code>
-                </div>
-              </div>
-              <button
-                id="access-outgoing-submit"
-                class="btn btn-secondary"
-                type="submit"
-              >
-                submit
-              </button>
-            </h2>
-            <div
-              id="ao"
-              class="accordion-collapse collapse"
-              aria-labelledby="headingOne"
-              data-bs-parent="#accordionExample"
-            >
-              <div id="access-outgoing-holder" class="accordion-body"></div>
-            </div>
-          </div>
-
-          <div class="accordion-item">
-            <h2 class="accordion-header" id="headingOne">
-              <div
-                class="accordion-button collapsed"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#c"
-                aria-expanded="false"
-                aria-controls="c"
-              >
-                <div class="d-flex align-items-center gap-2">
-                  <span class="badge bg-success method-badge">POST</span>
-                  <code class="text-muted">/continue</code>
-                </div>
-              </div>
-              <button
-                id="continue-submit"
-                class="btn btn-secondary"
-                type="submit"
-              >
-                submit
-              </button>
-            </h2>
-            <div
-              id="c"
-              class="accordion-collapse collapse"
-              aria-labelledby="headingOne"
-              data-bs-parent="#accordionExample"
-            >
-              <div id="continue-holder" class="accordion-body"></div>
-            </div>
-          </div>
-
-          <div class="accordion-item">
-            <h2 class="accordion-header" id="headingOne">
-              <div
-                class="accordion-button collapsed"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#rt"
-                aria-expanded="false"
-                aria-controls="rt"
-              >
-                <div class="d-flex align-items-center gap-2">
-                  <span class="badge bg-success method-badge">POST</span>
-                  <code class="text-muted">/manage-token</code>
-                </div>
-              </div>
-              <button
-                id="manage-token-submit"
-                class="btn btn-secondary"
-                type="submit"
-              >
-                submit
-              </button>
-            </h2>
-            <div
-              id="rt"
-              class="accordion-collapse collapse"
-              aria-labelledby="headingOne"
-              data-bs-parent="#accordionExample"
-            >
-              <div id="manage-token-holder" class="accordion-body"></div>
-            </div>
-          </div>
-
-          <div class="accordion-item">
-            <h2 class="accordion-header" id="headingOne">
-              <div
-                class="accordion-button collapsed"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#cg"
-                aria-expanded="false"
-                aria-controls="cg"
+                aria-controls="gca"
               >
                 <div class="d-flex align-items-center gap-2">
                   <span class="badge bg-danger method-badge">DELETE</span>
-                  <code class="text-muted">/cancel-access</code>
+                  <code class="text-muted">/grant_cancel</code>
                 </div>
               </div>
               <button
-                id="cancel-access-submit"
+                id="grant_cancel-submit"
                 class="btn btn-secondary"
                 type="submit"
               >
@@ -265,12 +166,78 @@
               </button>
             </h2>
             <div
-              id="cg"
+              id="gca"
               class="accordion-collapse collapse"
               aria-labelledby="headingOne"
               data-bs-parent="#accordionExample"
             >
-              <div id="cancel-access-holder" class="accordion-body"></div>
+              <div id="grant_cancel-holder" class="accordion-body"></div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+              <div
+                class="accordion-button collapsed"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#tro"
+                aria-expanded="false"
+                aria-controls="tro"
+              >
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge bg-success method-badge">POST</span>
+                  <code class="text-muted">/token_rotate</code>
+                </div>
+              </div>
+              <button
+                id="token_rotate-submit"
+                class="btn btn-secondary"
+                type="submit"
+              >
+                submit
+              </button>
+            </h2>
+            <div
+              id="tro"
+              class="accordion-collapse collapse"
+              aria-labelledby="headingOne"
+              data-bs-parent="#accordionExample"
+            >
+              <div id="token_rotate-holder" class="accordion-body"></div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+              <div
+                class="accordion-button collapsed"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#tre"
+                aria-expanded="false"
+                aria-controls="tre"
+              >
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge bg-danger method-badge">DELETE</span>
+                  <code class="text-muted">/token_revoke</code>
+                </div>
+              </div>
+              <button
+                id="token_revoke-submit"
+                class="btn btn-secondary"
+                type="submit"
+              >
+                submit
+              </button>
+            </h2>
+            <div
+              id="tre"
+              class="accordion-collapse collapse"
+              aria-labelledby="headingOne"
+              data-bs-parent="#accordionExample"
+            >
+              <div id="token_revoke-holder" class="accordion-body"></div>
             </div>
           </div>
 
@@ -288,11 +255,11 @@
               >
                 <div class="d-flex align-items-center gap-2">
                   <span class="badge bg-success method-badge">POST</span>
-                  <code class="text-muted">/incoming-payment</code>
+                  <code class="text-muted">/incoming-payment_create</code>
                 </div>
               </div>
               <button
-                id="incoming-payment-submit"
+                id="incoming-payment_create-submit"
                 class="btn btn-secondary"
                 type="submit"
               >
@@ -305,7 +272,10 @@
               aria-labelledby="headingOne"
               data-bs-parent="#accordionExample"
             >
-              <div id="incoming-payment-holder" class="accordion-body"></div>
+              <div
+                id="incoming-payment_create-holder"
+                class="accordion-body"
+              ></div>
             </div>
           </div>
 
@@ -321,10 +291,14 @@
               >
                 <div class="d-flex align-items-center gap-2">
                   <span class="badge bg-success method-badge">POST</span>
-                  <code class="text-muted">/quote</code>
+                  <code class="text-muted">/quote_create</code>
                 </div>
               </div>
-              <button id="quote-submit" class="btn btn-secondary" type="submit">
+              <button
+                id="quote_create-submit"
+                class="btn btn-secondary"
+                type="submit"
+              >
                 submit
               </button>
             </h2>
@@ -334,7 +308,7 @@
               aria-labelledby="headingOne"
               data-bs-parent="#accordionExample"
             >
-              <div id="quote-holder" class="accordion-body"></div>
+              <div id="quote_create-holder" class="accordion-body"></div>
             </div>
           </div>
 
@@ -350,11 +324,11 @@
               >
                 <div class="d-flex align-items-center gap-2">
                   <span class="badge bg-success method-badge">POST</span>
-                  <code class="text-muted">/outgoing-payment</code>
+                  <code class="text-muted">/outgoing-payment_create</code>
                 </div>
               </div>
               <button
-                id="outgoing-payment-submit"
+                id="outgoing-payment_create-submit"
                 class="btn btn-secondary"
                 type="submit"
               >
@@ -367,7 +341,10 @@
               aria-labelledby="headingOne"
               data-bs-parent="#accordionExample"
             >
-              <div id="outgoing-payment-holder" class="accordion-body"></div>
+              <div
+                id="outgoing-payment_create-holder"
+                class="accordion-body"
+              ></div>
             </div>
           </div>
         </div>
