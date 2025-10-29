@@ -61,11 +61,44 @@ export async function generateSchemaFromType(
     "../node_modules/@interledger/open-payments/dist/types.d.ts",
   ]
 ): Promise<void> {
+  const tempFilePath = path.resolve(
+    __dirname,
+    `temp-${outputFileName}-${Date.now()}.ts`
+  );
+
   try {
+    const moduleClient = "ClientModule";
+    const moduleTypes = "TypesModule";
+
+    // Create a helper to check which module contains each type
+    // For now, assume client module for Request types and types module for Create/Grant types
+    const getTypeReference = (typeName: string) => {
+      // Types from client/index.d.ts
+      if (typeName.includes("RequestArgs") || typeName.includes("Token")) {
+        return `${moduleClient}.${typeName}`;
+      }
+      // Types from types.d.ts (Grant, Create, etc.)
+      return `${moduleTypes}.${typeName}`;
+    };
+
+    // Create the temporary TypeScript file with the intersection type
+    const tempFileContent = `
+import type * as ${moduleClient} from "${sourceFiles[0]}";
+import type * as ${moduleTypes} from "${sourceFiles[1]}";
+
+type ${outputFileName.replace(/-/g, "_")}Type = ${types.map(getTypeReference).join(" & ")};
+
+export { ${outputFileName.replace(/-/g, "_")}Type };
+`;
+
+    // Write the temporary file
+    fs.writeFileSync(tempFilePath, tempFileContent, "utf-8");
+
     // Convert relative paths to absolute paths
     const absoluteSourceFiles = sourceFiles.map((file) =>
       path.resolve(__dirname, file)
     );
+    absoluteSourceFiles.push(tempFilePath);
 
     // Settings for the schema generator
     const settings: TJS.PartialArgs = {
@@ -76,37 +109,20 @@ export async function generateSchemaFromType(
       constAsEnum: true,
     };
 
-    // Programmatically create the schema
+    // Programmatically create the schema from the temporary file
     const program = TJS.getProgramFromFiles(absoluteSourceFiles, {
       skipLibCheck: true,
     });
 
-    // Generate schemas for each type
-    const typeSchemas: any[] = [];
-    for (const typeName of types) {
-      const schema = TJS.generateSchema(program, typeName, settings);
-      if (!schema) {
-        throw new Error(`Could not generate schema for type: ${typeName}`);
-      }
-      typeSchemas.push(schema);
-    }
+    // Generate schema from the intersection type
+    const finalTypeName = `${outputFileName.replace(/-/g, "_")}Type`;
+    const schema = TJS.generateSchema(program, finalTypeName, settings);
 
-    // Create intersection schema using allOf
-    let intersectionSchema: any;
-    if (typeSchemas.length === 1) {
-      // Single type, no need for intersection
-      intersectionSchema = typeSchemas[0];
-    } else {
-      // Multiple types, create intersection using allOf
-      intersectionSchema = {
-        allOf: typeSchemas,
-      };
+    if (!schema) {
+      throw new Error(
+        `Could not generate schema for intersection type: ${finalTypeName}`
+      );
     }
-
-    // Dereference the schema to resolve all references
-    // intersectionSchema = await $RefParser.dereference(intersectionSchema, {
-    //   mutateInputSchema: false,
-    // });
 
     // Ensure output directory exists
     const outputPath = path.resolve(
@@ -116,7 +132,7 @@ export async function generateSchemaFromType(
     fs.mkdirSync(path.dirname(outputPath), { recursive: true });
 
     // Write the schema to file
-    fs.writeFileSync(outputPath, JSON.stringify(intersectionSchema, null, 2));
+    fs.writeFileSync(outputPath, JSON.stringify(schema, null, 2));
 
     const typesStr = types.join(" & ");
     console.log(
@@ -128,6 +144,11 @@ export async function generateSchemaFromType(
       error
     );
     throw error;
+  } finally {
+    // Clean up: delete the temporary file
+    if (fs.existsSync(tempFilePath)) {
+      fs.unlinkSync(tempFilePath);
+    }
   }
 }
 

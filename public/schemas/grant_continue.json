@@ -1,6 +1,14 @@
 {
   "allOf": [
     {
+      "$ref": "#/definitions/GrantOrTokenRequestArgs"
+    },
+    {
+      "$ref": "#/definitions/Required<{interact_ref?:string;}>"
+    }
+  ],
+  "definitions": {
+    "GrantOrTokenRequestArgs": {
       "type": "object",
       "properties": {
         "url": {
@@ -19,10 +27,9 @@
       "required": [
         "accessToken",
         "url"
-      ],
-      "$schema": "http://json-schema.org/draft-07/schema#"
+      ]
     },
-    {
+    "Required<{interact_ref?:string;}>": {
       "type": "object",
       "properties": {
         "interact_ref": {
@@ -35,8 +42,8 @@
       ],
       "required": [
         "interact_ref"
-      ],
-      "$schema": "http://json-schema.org/draft-07/schema#"
+      ]
     }
-  ]
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
 }
