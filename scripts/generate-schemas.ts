@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import $RefParser from "@apidevtools/json-schema-ref-parser";
 import * as TJS from "typescript-json-schema";
 
 async function main() {
@@ -22,10 +23,7 @@ async function main() {
     "grant_continue"
   );
 
-  await generateSchemaFromType(
-    ["GrantOrTokenRequestArgs", "GrantOrTokenRequestArgs"],
-    "grant_cancel"
-  );
+  await generateSchemaFromType(["GrantOrTokenRequestArgs"], "grant_cancel");
 
   await generateSchemaFromType(["GrantOrTokenRequestArgs"], "token_rotate");
 
@@ -104,6 +102,11 @@ export async function generateSchemaFromType(
         allOf: typeSchemas,
       };
     }
+
+    // Dereference the schema to resolve all references
+    // intersectionSchema = await $RefParser.dereference(intersectionSchema, {
+    //   mutateInputSchema: false,
+    // });
 
     // Ensure output directory exists
     const outputPath = path.resolve(

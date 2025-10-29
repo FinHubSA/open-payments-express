@@ -16,6 +16,7 @@ const apiFormsOptions = {
   show_errors: "interaction",
   theme: "bootstrap4",
   enforce_const: true,
+  max_depth: 0,
 };
 
 async function renderAPIForms() {
