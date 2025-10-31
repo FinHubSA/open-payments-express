@@ -74,7 +74,9 @@
             </div>
           </div>
 
-          <h4 class="border-bottom p-1">Auth Server</h4>
+          <h4 class="border-bottom p-1 pt-4">Auth Server</h4>
+
+          <h5 class="border-bottom text-muted p-2">Grants</h5>
 
           <div class="accordion-item">
             <h2 class="accordion-header" id="headingOne">
@@ -175,6 +177,8 @@
             </div>
           </div>
 
+          <h5 class="border-bottom text-muted p-2">Tokens</h5>
+
           <div class="accordion-item">
             <h2 class="accordion-header" id="headingOne">
               <div
@@ -241,7 +245,9 @@
             </div>
           </div>
 
-          <h4 class="border-bottom p-1">Resource Server</h4>
+          <h4 class="border-bottom p-1 pt-4">Resource Server</h4>
+
+          <h5 class="border-bottom text-muted p-2">Incoming Payments</h5>
 
           <div class="accordion-item">
             <h2 class="accordion-header" id="headingOne">
@@ -285,6 +291,116 @@
                 class="accordion-button collapsed"
                 type="button"
                 data-bs-toggle="collapse"
+                data-bs-target="#ipg"
+                aria-expanded="false"
+                aria-controls="ipg"
+              >
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge bg-primary method-badge">GET</span>
+                  <code class="text-muted">/incoming-payment_get</code>
+                </div>
+              </div>
+              <button
+                id="incoming-payment_get-submit"
+                class="btn btn-secondary"
+                type="submit"
+              >
+                submit
+              </button>
+            </h2>
+            <div
+              id="ipg"
+              class="accordion-collapse collapse"
+              aria-labelledby="headingOne"
+              data-bs-parent="#accordionExample"
+            >
+              <div
+                id="incoming-payment_get-holder"
+                class="accordion-body"
+              ></div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+              <div
+                class="accordion-button collapsed"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#ipc"
+                aria-expanded="false"
+                aria-controls="ipc"
+              >
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge bg-success method-badge">POST</span>
+                  <code class="text-muted">/incoming-payment_complete</code>
+                </div>
+              </div>
+              <button
+                id="incoming-payment_complete-submit"
+                class="btn btn-secondary"
+                type="submit"
+              >
+                submit
+              </button>
+            </h2>
+            <div
+              id="ipc"
+              class="accordion-collapse collapse"
+              aria-labelledby="headingOne"
+              data-bs-parent="#accordionExample"
+            >
+              <div
+                id="incoming-payment_complete-holder"
+                class="accordion-body"
+              ></div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+              <div
+                class="accordion-button collapsed"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#ipl"
+                aria-expanded="false"
+                aria-controls="ipl"
+              >
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge bg-primary method-badge">GET</span>
+                  <code class="text-muted">/incoming-payment_list</code>
+                </div>
+              </div>
+              <button
+                id="incoming-payment_list-submit"
+                class="btn btn-secondary"
+                type="submit"
+              >
+                submit
+              </button>
+            </h2>
+            <div
+              id="ipl"
+              class="accordion-collapse collapse"
+              aria-labelledby="headingOne"
+              data-bs-parent="#accordionExample"
+            >
+              <div
+                id="incoming-payment_list-holder"
+                class="accordion-body"
+              ></div>
+            </div>
+          </div>
+
+          <h5 class="border-bottom text-muted p-2">Quotes</h5>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+              <div
+                class="accordion-button collapsed"
+                type="button"
+                data-bs-toggle="collapse"
                 data-bs-target="#qt"
                 aria-expanded="false"
                 aria-controls="qt"
@@ -318,6 +434,41 @@
                 class="accordion-button collapsed"
                 type="button"
                 data-bs-toggle="collapse"
+                data-bs-target="#qg"
+                aria-expanded="false"
+                aria-controls="qg"
+              >
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge bg-primary method-badge">GET</span>
+                  <code class="text-muted">/quote_get</code>
+                </div>
+              </div>
+              <button
+                id="quote_get-submit"
+                class="btn btn-secondary"
+                type="submit"
+              >
+                submit
+              </button>
+            </h2>
+            <div
+              id="qg"
+              class="accordion-collapse collapse"
+              aria-labelledby="headingOne"
+              data-bs-parent="#accordionExample"
+            >
+              <div id="quote_get-holder" class="accordion-body"></div>
+            </div>
+          </div>
+
+          <h5 class="border-bottom text-muted p-2">Outgoing Payments</h5>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+              <div
+                class="accordion-button collapsed"
+                type="button"
+                data-bs-toggle="collapse"
                 data-bs-target="#op"
                 aria-expanded="false"
                 aria-controls="op"
@@ -343,6 +494,78 @@
             >
               <div
                 id="outgoing-payment_create-holder"
+                class="accordion-body"
+              ></div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+              <div
+                class="accordion-button collapsed"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#opg"
+                aria-expanded="false"
+                aria-controls="opg"
+              >
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge bg-primary method-badge">GET</span>
+                  <code class="text-muted">/outgoing-payment_get</code>
+                </div>
+              </div>
+              <button
+                id="outgoing-payment_get-submit"
+                class="btn btn-secondary"
+                type="submit"
+              >
+                submit
+              </button>
+            </h2>
+            <div
+              id="opg"
+              class="accordion-collapse collapse"
+              aria-labelledby="headingOne"
+              data-bs-parent="#accordionExample"
+            >
+              <div
+                id="outgoing-payment_get-holder"
+                class="accordion-body"
+              ></div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+              <div
+                class="accordion-button collapsed"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#opl"
+                aria-expanded="false"
+                aria-controls="opl"
+              >
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge bg-primary method-badge">GET</span>
+                  <code class="text-muted">/outgoing-payment_list</code>
+                </div>
+              </div>
+              <button
+                id="outgoing-payment_list-submit"
+                class="btn btn-secondary"
+                type="submit"
+              >
+                submit
+              </button>
+            </h2>
+            <div
+              id="opl"
+              class="accordion-collapse collapse"
+              aria-labelledby="headingOne"
+              data-bs-parent="#accordionExample"
+            >
+              <div
+                id="outgoing-payment_list-holder"
                 class="accordion-body"
               ></div>
             </div>

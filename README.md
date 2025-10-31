@@ -40,8 +40,10 @@ npm install
 # Development mode with auto-restart
 npm run dev
 ```
+
 This command does two things:
-- Runs `ts-node scripts/generate-schemas.ts`, which generates the latest schemas and TypeScript types from the definitions in `openapi`. It puts these files in the `public/schemas` folder and the `types` folder respectively.
+
+- Runs `ts-node scripts/generate-schemas.ts`, which generates JSON schemas from TypeScript type definitions in the `@interledger/open-payments` package. These schemas are used to dynamically render form fields in the UI.
 - Starts the development server so you can view the demo.
 
 The server will start on `http://localhost:3001`
@@ -49,35 +51,88 @@ The server will start on `http://localhost:3001`
 ## 📂 Project Structure
 
 ```
-├── openapi/ # JSON Schemas for the different servers
+├── openapi/ # JSON Schemas for the different servers (reference only)
 │ ├── auth-server.json # Auth server schema
 │ ├── resource-server.json # Resource server schema
 │ └── wallet-address-server.json # Wallet address server schema
-│ 
+│
 ├── scripts/ # Build scripts for generating artifacts
-│ ├── generate-schemas.js # Generates TypeScript types and individual schemas to make for API call fields
-│ 
+│ └── generate-schemas.ts # Generates JSON schemas from TypeScript types
+│
 ├── services/ # Service layer for making Open Payments requests
-│ └── open-payments.ts
-│ |
-├── types/ # Generated types from the generate-schemas.js build script
-| |  ├── access-incoming.d.ts
-| |  ├── access-outgoing.d.ts
-| |  └── ...
-| 
-├── public/ # Frontend demo
-│ ├── schemas # Generated schemas from the generate-schemas.js build script
-| |  ├── access-incoming.json
-| |  ├── access-outgoing.json
-| |  └── ...
-| |
-│ ├── lib # javascript libraries for the UI
-| |  ├── json-text-editor.min.js # for the <andypf-json-viewer/> element which displays json responses
-| |  └── json-ui-editor.min.js # for rendering the html forms from the public/schemas folder
-| |
-│ ├── script.js # The logc for rendering forms, submitting, forms and request history
-│ └── style.css # The styling
-| |
+│ └── open-payments.ts # Implementation of Open Payments API calls
+│
+├── types/ # Legacy generated types (deprecated)
+│ ├── access-incoming.d.ts
+│ ├── access-outgoing.d.ts
+│ └── ...
+│
+├── server.ts # Express server with API endpoints
+│
 ├── index.html # The main UI file for displaying the frontend
+│
+├── public/ # Frontend demo
+│ ├── schemas/ # Generated JSON schemas for form rendering
+│ │ ├── wallet-address_get.json
+│ │ ├── grant_request.json
+│ │ ├── grant_continue.json
+│ │ ├── grant_cancel.json
+│ │ ├── token_rotate.json
+│ │ ├── token_revoke.json
+│ │ ├── incoming-payment_create.json
+│ │ ├── incoming-payment_get.json
+│ │ ├── incoming-payment_complete.json
+│ │ ├── incoming-payment_list.json
+│ │ ├── quote_create.json
+│ │ ├── quote_get.json
+│ │ ├── outgoing-payment_create.json
+│ │ ├── outgoing-payment_get.json
+│ │ └── outgoing-payment_list.json
+│ │
+│ ├── lib/ # JavaScript libraries for the UI
+│ │ ├── json-text-editor.min.js # For the <andypf-json-viewer/> element
+│ │ └── json-ui-editor.min.js # For rendering HTML forms from schemas
+│ │
+│ ├── script.js # Logic for rendering forms, submitting requests, and history
+│ ├── styles.css # The styling
+│ ├── logo.png # Application logo
+│ └── favicon.svg # Application favicon
+│
 └── ... # Other files for the project
 ```
+
+## 🔧 Schema Generation
+
+The application uses a custom schema generation approach that leverages TypeScript types from the `@interledger/open-payments` package.
+
+### How It Works
+
+The `scripts/generate-schemas.ts` script:
+
+1. **Imports TypeScript types** from `@interledger/open-payments/dist/client/index.d.ts` and `@interledger/open-payments/dist/types.d.ts`
+2. **Creates intersection types** by combining multiple TypeScript types (e.g., `ResourceRequestArgs & CreateIncomingPaymentArgs`)
+3. **Generates JSON schemas** using `typescript-json-schema` to convert TypeScript types to JSON Schema format
+4. **Outputs schemas** to `public/schemas/` for use in the UI forms
+
+### Naming Convention
+
+API endpoint schemas follow this naming pattern:
+
+```
+<resource-type>-<route-name>.json
+```
+
+Where:
+
+- **`<resource-type>`**: The resource being accessed (e.g., `incoming-payment`, `quote`, `outgoing-payment`)
+- **`<route-name>`**: The specific route/method being called from the client routes interface
+
+Examples:
+
+- `wallet-address_get.json` - Get wallet address
+- `grant_request.json` - Request a grant
+- `incoming-payment_create.json` - Create an incoming payment
+- `outgoing-payment_list.json` - List outgoing payments
+- `quote_get.json` - Get a quote
+
+This naming convention makes it clear which client route each schema corresponds to.

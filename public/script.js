@@ -29,8 +29,16 @@ async function renderAPIForms() {
   await renderAPIForm("token_revoke");
 
   await renderAPIForm("incoming-payment_create");
+  await renderAPIForm("incoming-payment_get");
+  await renderAPIForm("incoming-payment_complete");
+  await renderAPIForm("incoming-payment_list");
+
   await renderAPIForm("quote_create");
+  await renderAPIForm("quote_get");
+
   await renderAPIForm("outgoing-payment_create");
+  await renderAPIForm("outgoing-payment_get");
+  await renderAPIForm("outgoing-payment_list");
 }
 
 async function renderAPIForm(endpoint) {

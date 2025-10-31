@@ -36,14 +36,35 @@ async function main() {
     "incoming-payment_create"
   );
 
+  await generateSchemaFromType(["ResourceRequestArgs"], "incoming-payment_get");
+
+  await generateSchemaFromType(
+    ["ResourceRequestArgs"],
+    "incoming-payment_complete"
+  );
+
+  await generateSchemaFromType(
+    ["CollectionRequestArgs"],
+    "incoming-payment_list"
+  );
+
   await generateSchemaFromType(
     ["ResourceRequestArgs", "CreateQuoteArgs"],
     "quote_create"
   );
 
+  await generateSchemaFromType(["ResourceRequestArgs"], "quote_get");
+
   await generateSchemaFromType(
     ["ResourceRequestArgs", "CreateOutgoingPaymentArgs"],
     "outgoing-payment_create"
+  );
+
+  await generateSchemaFromType(["ResourceRequestArgs"], "outgoing-payment_get");
+
+  await generateSchemaFromType(
+    ["CollectionRequestArgs"],
+    "outgoing-payment_list"
   );
 }
 
@@ -136,7 +157,7 @@ export { ${outputFileName.replace(/-/g, "_")}Type };
 
     const typesStr = types.join(" & ");
     console.log(
-      `✅ Schema generated from TypeScript types '${typesStr}' at ${outputPath}`
+      `✅ Schema generated from TypeScript types '${typesStr}' at /public/schemas/${outputFileName}.json`
     );
   } catch (error) {
     console.error(
