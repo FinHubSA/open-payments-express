@@ -3,17 +3,19 @@ import {
   type WalletAddress,
   type Grant,
   createAuthenticatedClient,
+  type GrantRequest,
+  GrantContinuationRequest,
 } from "@interledger/open-payments";
-import { type IncomingPayment } from "../types/incoming-payment";
-import { Quote } from "../types/quote";
-import { AccessIncoming } from "../types/access-incoming";
-import { AccessQuote } from "../types/access-quote";
-import { AccessOutgoing } from "../types/access-outgoing";
-import { OutgoingPayment } from "../types/outgoing-payment";
-import { Continue } from "../types/continue";
-import { ManageAccessToken } from "../types/manage-token";
-import { CancelGrant } from "../types/cancel-access";
-import { WalletAddress as SchemaWalletAddress } from "../types/wallet-address";
+import {
+  GrantOrTokenRequestArgs,
+  ResourceRequestArgs,
+  UnauthenticatedResourceRequestArgs,
+} from "@interledger/open-payments/dist/client";
+import {
+  CreateIncomingPaymentArgs,
+  CreateOutgoingPaymentArgs,
+  CreateQuoteArgs,
+} from "@interledger/open-payments/dist/types";
 
 dotenv.config({ path: ".env" });
 
@@ -43,16 +45,16 @@ export async function getAuthenticatedClient() {
  * @returns
  */
 export async function walletAddress(
-  input: SchemaWalletAddress
+  input: UnauthenticatedResourceRequestArgs
 ): Promise<WalletAddress> {
   const client = await getAuthenticatedClient();
 
-  if (input.id && input.id.startsWith("$")) {
-    input.id = input.id.replace("$", "https://");
+  if (input.url && input.url.startsWith("$")) {
+    input.url = input.url.replace("$", "https://");
   }
 
   const walletAddressDetails: WalletAddress = await client.walletAddress.get({
-    url: input.id,
+    url: input.url,
   });
 
   console.log("<< Wallet address details");
@@ -62,16 +64,18 @@ export async function walletAddress(
 }
 
 /**
- * Get an access token to create an incoming payment resource
+ * Get an access token to create a resource on the resource server
  * @param input
  * @returns
  */
-export async function accessIncoming(input: AccessIncoming) {
+export async function grantRequest(
+  input: UnauthenticatedResourceRequestArgs & GrantRequest
+) {
   const client = await getAuthenticatedClient();
 
   // get wallet address details of the client
   const walletAddressDetails = await walletAddress({
-    id: process.env.OPEN_PAYMENTS_CLIENT_ADDRESS!,
+    url: process.env.OPEN_PAYMENTS_CLIENT_ADDRESS!,
   });
 
   // request grant
@@ -80,35 +84,8 @@ export async function accessIncoming(input: AccessIncoming) {
       url: walletAddressDetails.authServer,
     },
     {
-      access_token: {
-        access: [{ type: input.type, actions: input.actions }],
-      },
-    }
-  );
-
-  return grant;
-}
-
-/**
- * Get an access token to create a quote resource
- * @param input
- * @returns
- */
-export async function accessQuote(input: AccessQuote) {
-  const client = await getAuthenticatedClient();
-
-  // get wallet address details of the client
-  const walletAddressDetails = await walletAddress({
-    id: process.env.OPEN_PAYMENTS_CLIENT_ADDRESS!,
-  });
-
-  // request grant
-  const grant = await client.grant.request(
-    {
-      url: walletAddressDetails.authServer,
-    },
-    {
-      access_token: { access: [{ type: input.type, actions: input.actions }] },
+      ...{ access_token: input.access_token },
+      ...(input.interact && { interact: input.interact }),
     }
   );
 
@@ -120,19 +97,21 @@ export async function accessQuote(input: AccessQuote) {
  * @param input
  * @returns
  */
-export async function continueAccess(input: Continue) {
+export async function continueAccess(
+  input: GrantOrTokenRequestArgs & GrantContinuationRequest
+) {
   const client = await getAuthenticatedClient();
 
   // get wallet address details of the client
   const walletAddressDetails = await walletAddress({
-    id: process.env.OPEN_PAYMENTS_CLIENT_ADDRESS!,
+    url: process.env.OPEN_PAYMENTS_CLIENT_ADDRESS!,
   });
 
   // continue grant request
   const grant = (await client.grant.continue(
     {
-      accessToken: input.access_token.value,
-      url: input.uri,
+      accessToken: input.accessToken!,
+      url: input.url,
     },
     {
       interact_ref: input.interact_ref!,
@@ -143,64 +122,35 @@ export async function continueAccess(input: Continue) {
 }
 
 /**
- * Get an access token to create an outgoing payment resource
- * This method will return a pending grant which must be authorized by the sender
+ * This method rotates an access token (used for recurring payments)
  * @param input
  * @returns
  */
-export async function accessOutgoing(input: AccessOutgoing) {
+export async function tokenRotate(input: GrantOrTokenRequestArgs) {
   const client = await getAuthenticatedClient();
 
-  // get wallet address details of the client
-  const walletAddressDetails = await walletAddress({
-    id: process.env.OPEN_PAYMENTS_CLIENT_ADDRESS!,
-  });
-
-  // request grant
-  const grant = await client.grant.request(
-    {
-      url: walletAddressDetails.authServer,
-    },
-    {
-      access_token: {
-        access: [
-          {
-            identifier: input.identifier,
-            type: input.type,
-            actions: input.actions,
-            limits: input.limits,
-          },
-        ],
-      },
-      interact: input.interact,
-    }
-  );
+  const grant = (await client.token.rotate({
+    accessToken: input.accessToken!,
+    url: input.url,
+  })) as Grant;
 
   return grant;
 }
 
 /**
- * This method rotates an access token (used for recurring payments) or revokes an existing access token
+ * This method revokes an existing access token
  * @param input
  * @returns
  */
-export async function manageAccessToken(input: ManageAccessToken) {
+export async function tokenRevoke(input: GrantOrTokenRequestArgs) {
   const client = await getAuthenticatedClient();
 
-  // continue grant request
-  if (input.action === "rotate") {
-    const grant = (await client.token.rotate({
-      accessToken: input.access_token,
-      url: input.url,
-    })) as Grant;
+  const result = await client.token.revoke({
+    accessToken: input.accessToken!,
+    url: input.url,
+  });
 
-    return grant;
-  } else {
-    await client.token.revoke({
-      accessToken: input.access_token,
-      url: input.url,
-    });
-  }
+  return result;
 }
 
 /**
@@ -208,13 +158,13 @@ export async function manageAccessToken(input: ManageAccessToken) {
  * @param input
  * @returns
  */
-export async function cancelAccess(input: CancelGrant) {
+export async function cancelAccess(input: GrantOrTokenRequestArgs) {
   const client = await getAuthenticatedClient();
 
   // cancel grant
   await client.grant.cancel({
     url: input.url!,
-    accessToken: input.access_token!,
+    accessToken: input.accessToken!,
   });
 }
 
@@ -223,12 +173,14 @@ export async function cancelAccess(input: CancelGrant) {
  * @param input
  * @returns
  */
-export async function incomingPayment(input: IncomingPayment) {
+export async function incomingPayment(
+  input: ResourceRequestArgs & CreateIncomingPaymentArgs
+) {
   const client = await getAuthenticatedClient();
 
   // get wallet address details of the client
   const walletAddressDetails = await walletAddress({
-    id: process.env.OPEN_PAYMENTS_CLIENT_ADDRESS!,
+    url: process.env.OPEN_PAYMENTS_CLIENT_ADDRESS!,
   });
 
   // create incoming payment
@@ -251,16 +203,99 @@ export async function incomingPayment(input: IncomingPayment) {
 }
 
 /**
- *  Create a quote resource after acquiring the create quote access token
+ * Get an incoming payment resource
  * @param input
  * @returns
  */
-export async function quote(input: Quote) {
+export async function getIncomingPayment(input: ResourceRequestArgs) {
   const client = await getAuthenticatedClient();
 
   // get wallet address details of the client
   const walletAddressDetails = await walletAddress({
-    id: process.env.OPEN_PAYMENTS_CLIENT_ADDRESS!,
+    url: process.env.OPEN_PAYMENTS_CLIENT_ADDRESS!,
+  });
+
+  const incomingPayment = await client.incomingPayment.get({
+    url: input.url,
+    accessToken: input.accessToken!,
+  });
+
+  console.log("<< Incoming payment retrieved");
+  console.log(incomingPayment);
+
+  return incomingPayment;
+}
+
+/**
+ * Complete an incoming payment resource
+ * @param input
+ * @returns
+ */
+export async function completeIncomingPayment(input: ResourceRequestArgs) {
+  const client = await getAuthenticatedClient();
+
+  // get wallet address details of the client
+  const walletAddressDetails = await walletAddress({
+    url: process.env.OPEN_PAYMENTS_CLIENT_ADDRESS!,
+  });
+
+  const completedPayment = await client.incomingPayment.complete({
+    url: input.url,
+    accessToken: input.accessToken!,
+  });
+
+  console.log("<< Incoming payment completed");
+  console.log(completedPayment);
+
+  return completedPayment;
+}
+
+/**
+ * List incoming payment resources
+ * @param input
+ * @returns
+ */
+export async function listIncomingPayments(input: any) {
+  const client = await getAuthenticatedClient();
+
+  // get wallet address details of the client
+  const walletAddressDetails = await walletAddress({
+    url: process.env.OPEN_PAYMENTS_CLIENT_ADDRESS!,
+  });
+
+  const {
+    accessToken,
+    url,
+    walletAddress: inputWalletAddress,
+    ...listArgs
+  } = input;
+
+  const incomingPayments = await client.incomingPayment.list(
+    {
+      url: walletAddressDetails.resourceServer as string,
+      accessToken: accessToken!,
+      walletAddress: inputWalletAddress || walletAddressDetails.id,
+    },
+    listArgs
+  );
+
+  console.log("<< Incoming payments listed");
+  console.log(incomingPayments);
+
+  return incomingPayments;
+}
+
+/**
+ *  Create a quote resource after acquiring the create quote access token
+ * @param input
+ * @returns
+ */
+export async function quote(input: ResourceRequestArgs & CreateQuoteArgs) {
+  const client = await getAuthenticatedClient();
+
+  // get wallet address details of the client
+  const walletAddressDetails = await walletAddress({
+    url: process.env.OPEN_PAYMENTS_CLIENT_ADDRESS!,
   });
 
   // create quote
@@ -283,32 +318,116 @@ export async function quote(input: Quote) {
 }
 
 /**
- * Create an outgoing payment resource after acquiring the create outgoing payment access token
+ * Get a quote resource
  * @param input
  * @returns
  */
-export async function outgoingPayment(input: OutgoingPayment) {
+export async function getQuote(input: ResourceRequestArgs) {
   const client = await getAuthenticatedClient();
 
   // get wallet address details of the client
   const walletAddressDetails = await walletAddress({
-    id: process.env.OPEN_PAYMENTS_CLIENT_ADDRESS!,
+    url: process.env.OPEN_PAYMENTS_CLIENT_ADDRESS!,
   });
+
+  const quoteResult = await client.quote.get({
+    url: input.url,
+    accessToken: input.accessToken!,
+  });
+
+  console.log("<< Quote retrieved");
+  console.log(quoteResult);
+
+  return quoteResult;
+}
+
+/**
+ * Create an outgoing payment resource after acquiring the create outgoing payment access token
+ * @param input
+ * @returns
+ */
+export async function outgoingPayment(
+  input: ResourceRequestArgs & CreateOutgoingPaymentArgs
+) {
+  const client = await getAuthenticatedClient();
+
+  // get wallet address details of the client
+  const walletAddressDetails = await walletAddress({
+    url: process.env.OPEN_PAYMENTS_CLIENT_ADDRESS!,
+  });
+
+  const { url, accessToken, ...createArgs } = input;
 
   // create outgoing payment
   const outgoingPayment = await client.outgoingPayment.create(
     {
       url: walletAddressDetails.resourceServer as string,
-      accessToken: input.accessToken,
+      accessToken: accessToken!,
     },
-    {
-      walletAddress: input.walletAddress,
-      quoteId: input.quoteId!,
-    }
+    createArgs
   );
 
   console.log("<< Resource created");
   console.log(outgoingPayment);
 
   return outgoingPayment;
+}
+
+/**
+ * Get an outgoing payment resource
+ * @param input
+ * @returns
+ */
+export async function getOutgoingPayment(input: ResourceRequestArgs) {
+  const client = await getAuthenticatedClient();
+
+  // get wallet address details of the client
+  const walletAddressDetails = await walletAddress({
+    url: process.env.OPEN_PAYMENTS_CLIENT_ADDRESS!,
+  });
+
+  const outgoingPaymentResult = await client.outgoingPayment.get({
+    url: input.url,
+    accessToken: input.accessToken!,
+  });
+
+  console.log("<< Outgoing payment retrieved");
+  console.log(outgoingPaymentResult);
+
+  return outgoingPaymentResult;
+}
+
+/**
+ * List outgoing payment resources
+ * @param input
+ * @returns
+ */
+export async function listOutgoingPayments(input: any) {
+  const client = await getAuthenticatedClient();
+
+  // get wallet address details of the client
+  const walletAddressDetails = await walletAddress({
+    url: process.env.OPEN_PAYMENTS_CLIENT_ADDRESS!,
+  });
+
+  const {
+    accessToken,
+    url,
+    walletAddress: inputWalletAddress,
+    ...listArgs
+  } = input;
+
+  const outgoingPayments = await client.outgoingPayment.list(
+    {
+      url: walletAddressDetails.resourceServer as string,
+      accessToken: accessToken!,
+      walletAddress: inputWalletAddress || walletAddressDetails.id,
+    },
+    listArgs
+  );
+
+  console.log("<< Outgoing payments listed");
+  console.log(outgoingPayments);
+
+  return outgoingPayments;
 }

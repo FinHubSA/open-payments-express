@@ -15,19 +15,30 @@ const apiFormsOptions = {
   object_layout: "normal",
   show_errors: "interaction",
   theme: "bootstrap4",
+  enforce_const: true,
+  max_depth: 0,
 };
 
 async function renderAPIForms() {
-  await renderAPIForm("access-incoming");
-  await renderAPIForm("access-quote");
-  await renderAPIForm("access-outgoing");
-  await renderAPIForm("continue");
-  await renderAPIForm("incoming-payment");
-  await renderAPIForm("quote");
-  await renderAPIForm("outgoing-payment");
-  await renderAPIForm("manage-token");
-  await renderAPIForm("cancel-access");
-  await renderAPIForm("wallet-address");
+  await renderAPIForm("wallet-address_get");
+  await renderAPIForm("grant_request");
+  await renderAPIForm("grant_continue");
+  await renderAPIForm("grant_cancel");
+
+  await renderAPIForm("token_rotate");
+  await renderAPIForm("token_revoke");
+
+  await renderAPIForm("incoming-payment_create");
+  await renderAPIForm("incoming-payment_get");
+  await renderAPIForm("incoming-payment_complete");
+  await renderAPIForm("incoming-payment_list");
+
+  await renderAPIForm("quote_create");
+  await renderAPIForm("quote_get");
+
+  await renderAPIForm("outgoing-payment_create");
+  await renderAPIForm("outgoing-payment_get");
+  await renderAPIForm("outgoing-payment_list");
 }
 
 async function renderAPIForm(endpoint) {

@@ -2,28 +2,36 @@ import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import path from "path";
 import {
-  accessIncoming,
-  accessQuote,
-  accessOutgoing,
-  getAuthenticatedClient,
+  grantRequest,
   incomingPayment,
+  getIncomingPayment,
+  completeIncomingPayment,
+  listIncomingPayments,
   quote,
+  getQuote,
   outgoingPayment,
+  getOutgoingPayment,
+  listOutgoingPayments,
   continueAccess,
-  manageAccessToken,
+  tokenRotate,
+  tokenRevoke,
   cancelAccess,
   walletAddress,
 } from "./services/open-payments";
-import { IncomingPayment } from "./types/incoming-payment";
-import { Quote } from "./types/quote";
-import { AccessIncoming } from "./types/access-incoming";
-import { AccessQuote } from "./types/access-quote";
-import { AccessOutgoing } from "./types/access-outgoing";
-import { OutgoingPayment } from "./types/outgoing-payment";
-import { Continue } from "./types/continue";
-import { ManageAccessToken } from "./types/manage-token";
-import { CancelGrant } from "./types/cancel-access";
-import { WalletAddress } from "./types/wallet-address";
+import {
+  GrantOrTokenRequestArgs,
+  ResourceRequestArgs,
+  type UnauthenticatedResourceRequestArgs,
+} from "@interledger/open-payments/dist/client";
+import {
+  CreateIncomingPaymentArgs,
+  CreateOutgoingPaymentArgs,
+  CreateQuoteArgs,
+  GrantContinuationRequest,
+  OutgoingPayment,
+  Quote,
+  type GrantRequest,
+} from "@interledger/open-payments/dist/types";
 
 // Initialize express app
 const app = express();
@@ -60,9 +68,9 @@ app.get("/api/health", (req: Request, res: Response) => {
 // ============== ENDPOINTS ==============
 
 app.post(
-  "/api/wallet-address",
+  "/api/wallet-address_get",
   async (req: Request, res: Response): Promise<any> => {
-    const input = req.body as WalletAddress;
+    const input = req.body as UnauthenticatedResourceRequestArgs;
 
     console.log("** input");
     console.log(input);
@@ -70,21 +78,21 @@ app.post(
       const result = await walletAddress(input);
       return res.status(200).json({ data: result });
     } catch (err: any) {
-      console.error("Error requesting grant:", err);
+      console.error("Error requesting wallet address:", err);
       return res.status(500).json({ error: err });
     }
   }
 );
 
 app.post(
-  "/api/access-incoming",
+  "/api/grant_request",
   async (req: Request, res: Response): Promise<any> => {
-    const input = req.body as AccessIncoming;
+    const input = req.body as UnauthenticatedResourceRequestArgs & GrantRequest;
 
     console.log("** input");
     console.log(input);
     try {
-      const result = await accessIncoming(input);
+      const result = await grantRequest(input);
       return res.status(200).json({ data: result });
     } catch (err: any) {
       console.error("Error requesting grant:", err);
@@ -94,74 +102,27 @@ app.post(
 );
 
 app.post(
-  "/api/access-quote",
+  "/api/grant_continue",
   async (req: Request, res: Response): Promise<any> => {
-    const input = req.body as AccessQuote;
+    const input = req.body as GrantOrTokenRequestArgs &
+      GrantContinuationRequest;
 
     console.log("** input");
     console.log(input);
     try {
-      const result = await accessQuote(input);
+      const result = await continueAccess(input);
       return res.status(200).json({ data: result });
     } catch (err: any) {
-      console.error("Error requesting grant:", err);
+      console.error("Error continuing grant:", err);
       return res.status(500).json({ error: err });
     }
   }
 );
 
 app.post(
-  "/api/access-outgoing",
+  "/api/grant_cancel",
   async (req: Request, res: Response): Promise<any> => {
-    const input = req.body as AccessOutgoing;
-
-    console.log("** input");
-    console.log(input);
-    try {
-      const result = await accessOutgoing(input);
-      return res.status(200).json({ data: result });
-    } catch (err: any) {
-      console.error("Error requesting grant:", err);
-      return res.status(500).json({ error: err });
-    }
-  }
-);
-
-app.post("/api/continue", async (req: Request, res: Response): Promise<any> => {
-  const input = req.body as Continue;
-
-  console.log("** input");
-  console.log(input);
-  try {
-    const result = await continueAccess(input);
-    return res.status(200).json({ data: result });
-  } catch (err: any) {
-    console.error("Error requesting grant:", err);
-    return res.status(500).json({ error: err });
-  }
-});
-
-app.post(
-  "/api/manage-token",
-  async (req: Request, res: Response): Promise<any> => {
-    const input = req.body as ManageAccessToken;
-
-    console.log("** input");
-    console.log(input);
-    try {
-      const result = await manageAccessToken(input);
-      return res.status(200).json({ data: result });
-    } catch (err: any) {
-      console.error("Error rotating access token:", err);
-      return res.status(500).json({ error: err });
-    }
-  }
-);
-
-app.post(
-  "/api/cancel-access",
-  async (req: Request, res: Response): Promise<any> => {
-    const input = req.body as CancelGrant;
+    const input = req.body as GrantOrTokenRequestArgs;
 
     console.log("** input");
     console.log(input);
@@ -169,6 +130,23 @@ app.post(
       const result = await cancelAccess(input);
       return res.status(200).json({ data: result });
     } catch (err: any) {
+      console.error("Error canceling grant:", err);
+      return res.status(500).json({ error: err });
+    }
+  }
+);
+
+app.post(
+  "/api/token_rotate",
+  async (req: Request, res: Response): Promise<any> => {
+    const input = req.body as GrantOrTokenRequestArgs;
+
+    console.log("** input");
+    console.log(input);
+    try {
+      const result = await tokenRotate(input);
+      return res.status(200).json({ data: result });
+    } catch (err: any) {
       console.error("Error rotating access token:", err);
       return res.status(500).json({ error: err });
     }
@@ -176,9 +154,26 @@ app.post(
 );
 
 app.post(
-  "/api/incoming-payment",
+  "/api/token_revoke",
   async (req: Request, res: Response): Promise<any> => {
-    const input = req.body as IncomingPayment;
+    const input = req.body as GrantOrTokenRequestArgs;
+
+    console.log("** input");
+    console.log(input);
+    try {
+      const result = await tokenRevoke(input);
+      return res.status(200).json({ data: result });
+    } catch (err: any) {
+      console.error("Error revoking access token:", err);
+      return res.status(500).json({ error: err });
+    }
+  }
+);
+
+app.post(
+  "/api/incoming-payment_create",
+  async (req: Request, res: Response): Promise<any> => {
+    const input = req.body as ResourceRequestArgs & CreateIncomingPaymentArgs;
 
     console.log("** input");
     console.log(input);
@@ -192,24 +187,95 @@ app.post(
   }
 );
 
-app.post("/api/quote", async (req: Request, res: Response): Promise<any> => {
-  const input = req.body as Quote;
+app.post(
+  "/api/incoming-payment_get",
+  async (req: Request, res: Response): Promise<any> => {
+    const input = req.body as ResourceRequestArgs;
 
-  console.log("** input");
-  console.log(input);
-  try {
-    const result = await quote(input);
-    return res.status(200).json({ data: result });
-  } catch (err: any) {
-    console.error("Error creating quote:", err);
-    return res.status(500).json({ error: err });
+    console.log("** input");
+    console.log(input);
+    try {
+      const result = await getIncomingPayment(input);
+      return res.status(200).json({ data: result });
+    } catch (err: any) {
+      console.error("Error getting incoming payment:", err);
+      return res.status(500).json({ error: err });
+    }
   }
-});
+);
 
 app.post(
-  "/api/outgoing-payment",
+  "/api/incoming-payment_complete",
   async (req: Request, res: Response): Promise<any> => {
-    const input = req.body as OutgoingPayment;
+    const input = req.body as ResourceRequestArgs;
+
+    console.log("** input");
+    console.log(input);
+    try {
+      const result = await completeIncomingPayment(input);
+      return res.status(200).json({ data: result });
+    } catch (err: any) {
+      console.error("Error completing incoming payment:", err);
+      return res.status(500).json({ error: err });
+    }
+  }
+);
+
+app.post(
+  "/api/incoming-payment_list",
+  async (req: Request, res: Response): Promise<any> => {
+    const input = req.body as any;
+
+    console.log("** input");
+    console.log(input);
+    try {
+      const result = await listIncomingPayments(input);
+      return res.status(200).json({ data: result });
+    } catch (err: any) {
+      console.error("Error listing incoming payments:", err);
+      return res.status(500).json({ error: err });
+    }
+  }
+);
+
+app.post(
+  "/api/quote_create",
+  async (req: Request, res: Response): Promise<any> => {
+    const input = req.body as ResourceRequestArgs & CreateQuoteArgs;
+
+    console.log("** input");
+    console.log(input);
+    try {
+      const result = await quote(input);
+      return res.status(200).json({ data: result });
+    } catch (err: any) {
+      console.error("Error creating quote:", err);
+      return res.status(500).json({ error: err });
+    }
+  }
+);
+
+app.post(
+  "/api/quote_get",
+  async (req: Request, res: Response): Promise<any> => {
+    const input = req.body as ResourceRequestArgs;
+
+    console.log("** input");
+    console.log(input);
+    try {
+      const result = await getQuote(input);
+      return res.status(200).json({ data: result });
+    } catch (err: any) {
+      console.error("Error getting quote:", err);
+      return res.status(500).json({ error: err });
+    }
+  }
+);
+
+app.post(
+  "/api/outgoing-payment_create",
+  async (req: Request, res: Response): Promise<any> => {
+    const input = req.body as ResourceRequestArgs & CreateOutgoingPaymentArgs;
 
     console.log("** input");
     console.log(input);
@@ -222,6 +288,40 @@ app.post(
     }
   }
 );
+
+app.post(
+  "/api/outgoing-payment_get",
+  async (req: Request, res: Response): Promise<any> => {
+    const input = req.body as ResourceRequestArgs;
+
+    console.log("** input");
+    console.log(input);
+    try {
+      const result = await getOutgoingPayment(input);
+      return res.status(200).json({ data: result });
+    } catch (err: any) {
+      console.error("Error getting outgoing payment:", err);
+      return res.status(500).json({ error: err });
+    }
+  }
+);
+
+app.post(
+  "/api/outgoing-payment_list",
+  async (req: Request, res: Response): Promise<any> => {
+    const input = req.body as any;
+
+    console.log("** input");
+    console.log(input);
+    try {
+      const result = await listOutgoingPayments(input);
+      return res.status(200).json({ data: result });
+    } catch (err: any) {
+      console.error("Error listing outgoing payments:", err);
+      return res.status(500).json({ error: err });
+    }
+  }
+);
 // ============== ERROR HANDLING ==============
 
 // 404
@@ -229,7 +329,24 @@ app.use("*", (req: Request, res: Response) => {
   res.status(404).json({
     error: "Endpoint not found",
     message: `The endpoint ${req.method} ${req.originalUrl} does not exist`,
-    availableEndpoints: ["GET /", "POST /api/create-incoming-payment"],
+    availableEndpoints: [
+      "GET /",
+      "POST /api/wallet-address_get",
+      "POST /api/grant_request",
+      "POST /api/grant_continue",
+      "POST /api/grant_cancel",
+      "POST /api/token_rotate",
+      "POST /api/token_revoke",
+      "POST /api/incoming-payment_create",
+      "POST /api/incoming-payment_get",
+      "POST /api/incoming-payment_complete",
+      "POST /api/incoming-payment_list",
+      "POST /api/quote_create",
+      "POST /api/quote_get",
+      "POST /api/outgoing-payment_create",
+      "POST /api/outgoing-payment_get",
+      "POST /api/outgoing-payment_list",
+    ],
   });
 });
 
@@ -249,34 +366,44 @@ app.listen(PORT, () => {
   console.log(`🚀 Express server running on http://localhost:${PORT}`);
   console.log(`🏥 Health check: http://localhost:${PORT}/api/health`);
   console.log("\n📋 Available endpoints:");
-  console.log("  POST   /api/wallet-address           - Get wallet details");
+  console.log("  POST   /api/wallet-address_get       - Get wallet details");
   console.log(
-    "  POST   /api/create-quote             - Create quote resource on sender account"
+    "  POST   /api/grant_request            - Request a grant for access token"
   );
   console.log(
-    "  POST   /api/access-incoming          - Get a access token to create an incoming payment"
+    "  POST   /api/grant_continue           - Continue to get an access token from a pending grant"
+  );
+  console.log("  POST   /api/grant_cancel             - Cancel a grant");
+  console.log(
+    "  POST   /api/token_rotate             - Rotate an access token"
   );
   console.log(
-    "  POST   /api/access-quote             - Get a access token to create quote"
+    "  POST   /api/token_revoke             - Revoke an access token"
   );
   console.log(
-    "  POST   /api/access-outgoing          - Get a access token to create an outgoing payment"
+    "  POST   /api/incoming-payment_create  - Create an incoming payment resource"
   );
   console.log(
-    "  POST   /api/continue                 - Continue to get an access token from a pending grant"
+    "  POST   /api/incoming-payment_get     - Get an incoming payment resource"
   );
   console.log(
-    "  POST   /api/manage-token             - Rotate or revoke an access token"
-  );
-
-  console.log(
-    "  POST   /api/incoming-payment         - Create an incoming payment resource"
+    "  POST   /api/incoming-payment_complete - Complete an incoming payment resource"
   );
   console.log(
-    "  POST   /api/quote                    - Create a quote resource"
+    "  POST   /api/incoming-payment_list    - List incoming payment resources"
   );
   console.log(
-    "  POST   /api/outgoing-payment -token  - Create an outgoing payment resource"
+    "  POST   /api/quote_create             - Create a quote resource"
+  );
+  console.log("  POST   /api/quote_get                - Get a quote resource");
+  console.log(
+    "  POST   /api/outgoing-payment_create  - Create an outgoing payment resource"
+  );
+  console.log(
+    "  POST   /api/outgoing-payment_get     - Get an outgoing payment resource"
+  );
+  console.log(
+    "  POST   /api/outgoing-payment_list    - List outgoing payment resources"
   );
 });
 

@@ -1,110 +1,179 @@
 import fs from "fs";
 import path from "path";
 import $RefParser from "@apidevtools/json-schema-ref-parser";
-import authServerSchema from "../openapi/auth-server.json";
-import walletAddressServerSchema from "../openapi/wallet-address-server.json";
-import resourceServerSchema from "../openapi/resource-server.json";
-import { compileFromFile } from "json-schema-to-typescript";
+import * as TJS from "typescript-json-schema";
 
 async function main() {
   /** Wallet Address Server */
-  await generateSchema(
-    walletAddressServerSchema.components.schemas["wallet-address"],
-    walletAddressServerSchema.components,
-    "wallet-address"
+
+  await generateSchemaFromType(
+    ["UnauthenticatedResourceRequestArgs"],
+    "wallet-address_get"
   );
 
   /** Auth Server  */
-  await generateSchema(
-    authServerSchema.components.schemas["access-incoming"],
-    authServerSchema.components,
-    "access-incoming"
+
+  await generateSchemaFromType(
+    ["UnauthenticatedResourceRequestArgs", "GrantRequest"],
+    "grant_request"
   );
 
-  await generateSchema(
-    authServerSchema.components.schemas["access-quote"],
-    authServerSchema.components,
-    "access-quote"
+  await generateSchemaFromType(
+    ["GrantOrTokenRequestArgs", "GrantContinuationRequest"],
+    "grant_continue"
   );
 
-  await generateSchema(
-    authServerSchema.components.schemas["access-outgoing"],
-    authServerSchema.components,
-    "access-outgoing"
-  );
+  await generateSchemaFromType(["GrantOrTokenRequestArgs"], "grant_cancel");
 
-  await generateSchema(
-    authServerSchema.components.schemas.continue,
-    authServerSchema.components,
-    "continue"
-  );
+  await generateSchemaFromType(["GrantOrTokenRequestArgs"], "token_rotate");
 
-  await generateSchema(
-    authServerSchema.components.schemas["manage-token"],
-    authServerSchema.components,
-    "manage-token"
-  );
-
-  await generateSchema(
-    authServerSchema.components.schemas["cancel-access"],
-    authServerSchema.components,
-    "cancel-access"
-  );
+  await generateSchemaFromType(["GrantOrTokenRequestArgs"], "token_revoke");
 
   /** Resource Server  */
 
-  await generateSchema(
-    resourceServerSchema.components.schemas["incoming-payment"],
-    resourceServerSchema.components,
-    "incoming-payment"
+  await generateSchemaFromType(
+    ["ResourceRequestArgs", "CreateIncomingPaymentArgs"],
+    "incoming-payment_create"
   );
 
-  await generateSchema(
-    resourceServerSchema.components.schemas.quote,
-    resourceServerSchema.components,
-    "quote"
+  await generateSchemaFromType(["ResourceRequestArgs"], "incoming-payment_get");
+
+  await generateSchemaFromType(
+    ["ResourceRequestArgs"],
+    "incoming-payment_complete"
   );
 
-  await generateSchema(
-    resourceServerSchema.components.schemas["outgoing-payment"],
-    resourceServerSchema.components,
-    "outgoing-payment"
+  await generateSchemaFromType(
+    ["CollectionRequestArgs"],
+    "incoming-payment_list"
+  );
+
+  await generateSchemaFromType(
+    ["ResourceRequestArgs", "CreateQuoteArgs"],
+    "quote_create"
+  );
+
+  await generateSchemaFromType(["ResourceRequestArgs"], "quote_get");
+
+  await generateSchemaFromType(
+    ["ResourceRequestArgs", "CreateOutgoingPaymentArgs"],
+    "outgoing-payment_create"
+  );
+
+  await generateSchemaFromType(["ResourceRequestArgs"], "outgoing-payment_get");
+
+  await generateSchemaFromType(
+    ["CollectionRequestArgs"],
+    "outgoing-payment_list"
   );
 }
 
-async function generateSchema(
-  jsonSchema: object,
-  components: object,
-  endpoint: string
-) {
-  const schema = JSON.parse(JSON.stringify(jsonSchema));
-  schema.components = components;
-
-  const hydratedGrantRequestSchema = await $RefParser.dereference(schema, {
-    mutateInputSchema: false,
-  });
-
-  const jsonSchemaOutputPath = path.resolve(
+/**
+ * Generate JSON schema from TypeScript type definitions (intersection)
+ * @param types - Array of TypeScript type/interface names to intersect
+ * @param outputFileName - The name of the output schema file (without extension)
+ * @param sourceFiles - Array of TypeScript source files containing the type definitions
+ */
+export async function generateSchemaFromType(
+  types: string[],
+  outputFileName: string,
+  sourceFiles: string[] = [
+    "../node_modules/@interledger/open-payments/dist/client/index.d.ts",
+    "../node_modules/@interledger/open-payments/dist/types.d.ts",
+  ]
+): Promise<void> {
+  const tempFilePath = path.resolve(
     __dirname,
-    `../public/schemas/${endpoint}.json`
-  );
-  fs.mkdirSync(path.dirname(jsonSchemaOutputPath), { recursive: true });
-  fs.writeFileSync(
-    jsonSchemaOutputPath,
-    JSON.stringify(hydratedGrantRequestSchema, null, 2)
+    `temp-${outputFileName}-${Date.now()}.ts`
   );
 
-  // generate typescript types
-  const typeOutputPath = path.resolve(__dirname, `../types/${endpoint}.d.ts`);
-  compileFromFile(`${jsonSchemaOutputPath}`).then((ts) =>
-    fs.writeFileSync(typeOutputPath, ts)
-  );
+  try {
+    const moduleClient = "ClientModule";
+    const moduleTypes = "TypesModule";
 
-  console.log(`✅ Schema generated at ${jsonSchemaOutputPath}`);
-  console.log(`✅ Type generated at ${typeOutputPath}`);
+    // Create a helper to check which module contains each type
+    // For now, assume client module for Request types and types module for Create/Grant types
+    const getTypeReference = (typeName: string) => {
+      // Types from client/index.d.ts
+      if (typeName.includes("RequestArgs") || typeName.includes("Token")) {
+        return `${moduleClient}.${typeName}`;
+      }
+      // Types from types.d.ts (Grant, Create, etc.)
+      return `${moduleTypes}.${typeName}`;
+    };
+
+    // Create the temporary TypeScript file with the intersection type
+    const tempFileContent = `
+import type * as ${moduleClient} from "${sourceFiles[0]}";
+import type * as ${moduleTypes} from "${sourceFiles[1]}";
+
+type ${outputFileName.replace(/-/g, "_")}Type = ${types.map(getTypeReference).join(" & ")};
+
+export { ${outputFileName.replace(/-/g, "_")}Type };
+`;
+
+    // Write the temporary file
+    fs.writeFileSync(tempFilePath, tempFileContent, "utf-8");
+
+    // Convert relative paths to absolute paths
+    const absoluteSourceFiles = sourceFiles.map((file) =>
+      path.resolve(__dirname, file)
+    );
+    absoluteSourceFiles.push(tempFilePath);
+
+    // Settings for the schema generator
+    const settings: TJS.PartialArgs = {
+      required: true,
+      noExtraProps: false,
+      propOrder: true,
+      typeOfKeyword: false,
+      constAsEnum: true,
+    };
+
+    // Programmatically create the schema from the temporary file
+    const program = TJS.getProgramFromFiles(absoluteSourceFiles, {
+      skipLibCheck: true,
+    });
+
+    // Generate schema from the intersection type
+    const finalTypeName = `${outputFileName.replace(/-/g, "_")}Type`;
+    const schema = TJS.generateSchema(program, finalTypeName, settings);
+
+    if (!schema) {
+      throw new Error(
+        `Could not generate schema for intersection type: ${finalTypeName}`
+      );
+    }
+
+    // Ensure output directory exists
+    const outputPath = path.resolve(
+      __dirname,
+      `../public/schemas/${outputFileName}.json`
+    );
+    fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+
+    // Write the schema to file
+    fs.writeFileSync(outputPath, JSON.stringify(schema, null, 2));
+
+    const typesStr = types.join(" & ");
+    console.log(
+      `✅ Schema generated from TypeScript types '${typesStr}' at /public/schemas/${outputFileName}.json`
+    );
+  } catch (error) {
+    console.error(
+      `Failed to generate schema from types [${types.join(", ")}]:`,
+      error
+    );
+    throw error;
+  } finally {
+    // Clean up: delete the temporary file
+    if (fs.existsSync(tempFilePath)) {
+      fs.unlinkSync(tempFilePath);
+    }
+  }
 }
 
 main().catch((err) => {
-  console.error("❌ Failed to generate schema:", err);
+  console.error("Failed to generate schema:", err);
   process.exit(1);
 });
