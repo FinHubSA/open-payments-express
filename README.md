@@ -17,7 +17,7 @@ Before you begin, you need to install the following tools:
 Open `Visual Studio Code` and open a `terminal` in your Visual Studio Code. Then run this command below:
 
 ```bash
-git clone https://github.com/FinHubSA/open-payments-express.git
+git clone git@github.com:interledger/open-payments-playground.git
 ```
 
 ### 2. Install Dependencies
