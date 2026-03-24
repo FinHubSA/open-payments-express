@@ -48,6 +48,18 @@ This command does two things:
 
 The server will start on `http://localhost:3001`
 
+### 5. Run the Production Build
+
+Use these commands for a production-style run:
+
+```bash
+npm run build
+npm start
+```
+
+- `npm run build` compiles `server.ts` into `dist/server.js` and also generates the schemas.
+- `npm start` runs the built server from the `dist` folder.
+
 ## 📂 Project Structure
 
 ```

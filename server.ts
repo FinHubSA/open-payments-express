@@ -36,6 +36,8 @@ import {
 // Initialize express app
 const app = express();
 const PORT = process.env.PORT || 3001;
+const projectRoot =
+  path.basename(__dirname) === "dist" ? path.resolve(__dirname, "..") : __dirname;
 
 // Middleware
 app.use(
@@ -48,11 +50,11 @@ app.use(
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, "./public")));
+app.use(express.static(path.join(projectRoot, "public")));
 
 // Root endpoint
 app.get("/", (req: Request, res: Response) => {
-  res.sendFile(path.join(__dirname, "/index.html"));
+  res.sendFile(path.join(projectRoot, "index.html"));
 });
 
 // Health check endpoint
