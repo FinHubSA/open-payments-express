@@ -43,8 +43,8 @@ npm run dev
 
 This command does two things:
 
-- Runs `ts-node scripts/generate-schemas.ts`, which generates JSON schemas from TypeScript type definitions in the `@interledger/open-payments` package. These schemas are used to dynamically render form fields in the UI.
-- Starts the development server so you can view the demo.
+- Runs `tsx scripts/generate-schemas.ts`, which generates the latest schemas and TypeScript types from the definitions in `openapi`. It puts these files in the `public/schemas` folder and the `types` folder respectively.
+- Starts the development server with `tsx watch`, so changes to `.ts` files auto-restart the server.
 
 The server will start on `http://localhost:3001`
 
@@ -119,13 +119,13 @@ The `scripts/generate-schemas.ts` script:
 API endpoint schemas follow this naming pattern:
 
 ```
-<resource-type>-<route-name>.json
+<resource-type>_<action-type>.json
 ```
 
 Where:
 
-- **`<resource-type>`**: The resource being accessed (e.g., `incoming-payment`, `quote`, `outgoing-payment`)
-- **`<route-name>`**: The specific route/method being called from the client routes interface
+- **`<resource-type>`**: Kebab-case resource name (e.g., `wallet-address`, `incoming-payment`, `outgoing-payment`)
+- **`<action-type>`**: Lowercase action from the client route method (e.g., `get`, `create`, `list`, `request`, `rotate`)
 
 Examples:
 
@@ -135,4 +135,4 @@ Examples:
 - `outgoing-payment_list.json` - List outgoing payments
 - `quote_get.json` - Get a quote
 
-This naming convention makes it clear which client route each schema corresponds to.
+This naming convention maps each schema file directly to a client route, making it easier to find the schema for a specific API action.

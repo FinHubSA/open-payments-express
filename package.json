@@ -4,9 +4,9 @@
   "description": "Express backend to illustrate Open Payments API",
   "main": "server.js",
   "scripts": {
-    "generate:schema": "ts-node scripts/generate-schemas.ts",
+    "generate:schema": "tsx scripts/generate-schemas.ts",
     "start": "node server.js",
-    "dev": "npm run generate:schema && nodemon --watch './**/*.ts' --exec ts-node server.ts",
+    "dev": "npm run generate:schema && tsx watch --include './**/*.ts' server.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -35,6 +35,7 @@
     "json-schema-to-ts": "^3.1.1",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
+    "tsx": "^4.19.4",
     "typescript": "^5.8.3",
     "typescript-json-schema": "^0.65.1"
   },
