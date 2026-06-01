@@ -37,7 +37,9 @@ import {
 const app = express();
 const PORT = process.env.PORT || 3001;
 const projectRoot =
-  path.basename(__dirname) === "dist" ? path.resolve(__dirname, "..") : __dirname;
+  path.basename(__dirname) === "dist"
+    ? path.resolve(__dirname, "..")
+    : __dirname;
 
 // Middleware
 app.use(
@@ -45,7 +47,7 @@ app.use(
     origin: "*",
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization", "X-API-Key"],
-  })
+  }),
 );
 
 app.use(express.json({ limit: "10mb" }));
@@ -74,7 +76,7 @@ app.post(
   async (req: Request, res: Response): Promise<any> => {
     const input = req.body as UnauthenticatedResourceRequestArgs;
 
-    console.log("** input");
+    console.log(">> input");
     console.log(input);
     try {
       const result = await walletAddress(input);
@@ -83,7 +85,7 @@ app.post(
       console.error("Error requesting wallet address:", err);
       return res.status(500).json({ error: err });
     }
-  }
+  },
 );
 
 app.post(
@@ -91,7 +93,7 @@ app.post(
   async (req: Request, res: Response): Promise<any> => {
     const input = req.body as UnauthenticatedResourceRequestArgs & GrantRequest;
 
-    console.log("** input");
+    console.log(">> input");
     console.log(input);
     try {
       const result = await grantRequest(input);
@@ -100,7 +102,7 @@ app.post(
       console.error("Error requesting grant:", err);
       return res.status(500).json({ error: err });
     }
-  }
+  },
 );
 
 app.post(
@@ -109,7 +111,7 @@ app.post(
     const input = req.body as GrantOrTokenRequestArgs &
       GrantContinuationRequest;
 
-    console.log("** input");
+    console.log(">> input");
     console.log(input);
     try {
       const result = await continueAccess(input);
@@ -118,7 +120,7 @@ app.post(
       console.error("Error continuing grant:", err);
       return res.status(500).json({ error: err });
     }
-  }
+  },
 );
 
 app.post(
@@ -126,7 +128,7 @@ app.post(
   async (req: Request, res: Response): Promise<any> => {
     const input = req.body as GrantOrTokenRequestArgs;
 
-    console.log("** input");
+    console.log(">> input");
     console.log(input);
     try {
       const result = await cancelAccess(input);
@@ -135,7 +137,7 @@ app.post(
       console.error("Error canceling grant:", err);
       return res.status(500).json({ error: err });
     }
-  }
+  },
 );
 
 app.post(
@@ -143,7 +145,7 @@ app.post(
   async (req: Request, res: Response): Promise<any> => {
     const input = req.body as GrantOrTokenRequestArgs;
 
-    console.log("** input");
+    console.log(">> input");
     console.log(input);
     try {
       const result = await tokenRotate(input);
@@ -152,7 +154,7 @@ app.post(
       console.error("Error rotating access token:", err);
       return res.status(500).json({ error: err });
     }
-  }
+  },
 );
 
 app.post(
@@ -160,7 +162,7 @@ app.post(
   async (req: Request, res: Response): Promise<any> => {
     const input = req.body as GrantOrTokenRequestArgs;
 
-    console.log("** input");
+    console.log(">> input");
     console.log(input);
     try {
       const result = await tokenRevoke(input);
@@ -169,7 +171,7 @@ app.post(
       console.error("Error revoking access token:", err);
       return res.status(500).json({ error: err });
     }
-  }
+  },
 );
 
 app.post(
@@ -177,7 +179,7 @@ app.post(
   async (req: Request, res: Response): Promise<any> => {
     const input = req.body as ResourceRequestArgs & CreateIncomingPaymentArgs;
 
-    console.log("** input");
+    console.log(">> input");
     console.log(input);
     try {
       const result = await incomingPayment(input);
@@ -186,7 +188,7 @@ app.post(
       console.error("Error creating incoming payment:", err);
       return res.status(500).json({ error: err });
     }
-  }
+  },
 );
 
 app.post(
@@ -194,7 +196,7 @@ app.post(
   async (req: Request, res: Response): Promise<any> => {
     const input = req.body as ResourceRequestArgs;
 
-    console.log("** input");
+    console.log(">> input");
     console.log(input);
     try {
       const result = await getIncomingPayment(input);
@@ -203,7 +205,7 @@ app.post(
       console.error("Error getting incoming payment:", err);
       return res.status(500).json({ error: err });
     }
-  }
+  },
 );
 
 app.post(
@@ -211,7 +213,7 @@ app.post(
   async (req: Request, res: Response): Promise<any> => {
     const input = req.body as ResourceRequestArgs;
 
-    console.log("** input");
+    console.log(">> input");
     console.log(input);
     try {
       const result = await completeIncomingPayment(input);
@@ -220,7 +222,7 @@ app.post(
       console.error("Error completing incoming payment:", err);
       return res.status(500).json({ error: err });
     }
-  }
+  },
 );
 
 app.post(
@@ -228,7 +230,7 @@ app.post(
   async (req: Request, res: Response): Promise<any> => {
     const input = req.body as any;
 
-    console.log("** input");
+    console.log(">> input");
     console.log(input);
     try {
       const result = await listIncomingPayments(input);
@@ -237,7 +239,7 @@ app.post(
       console.error("Error listing incoming payments:", err);
       return res.status(500).json({ error: err });
     }
-  }
+  },
 );
 
 app.post(
@@ -245,7 +247,7 @@ app.post(
   async (req: Request, res: Response): Promise<any> => {
     const input = req.body as ResourceRequestArgs & CreateQuoteArgs;
 
-    console.log("** input");
+    console.log(">> input");
     console.log(input);
     try {
       const result = await quote(input);
@@ -254,7 +256,7 @@ app.post(
       console.error("Error creating quote:", err);
       return res.status(500).json({ error: err });
     }
-  }
+  },
 );
 
 app.post(
@@ -262,7 +264,7 @@ app.post(
   async (req: Request, res: Response): Promise<any> => {
     const input = req.body as ResourceRequestArgs;
 
-    console.log("** input");
+    console.log(">> input");
     console.log(input);
     try {
       const result = await getQuote(input);
@@ -271,7 +273,7 @@ app.post(
       console.error("Error getting quote:", err);
       return res.status(500).json({ error: err });
     }
-  }
+  },
 );
 
 app.post(
@@ -279,7 +281,7 @@ app.post(
   async (req: Request, res: Response): Promise<any> => {
     const input = req.body as ResourceRequestArgs & CreateOutgoingPaymentArgs;
 
-    console.log("** input");
+    console.log(">> input");
     console.log(input);
     try {
       const result = await outgoingPayment(input);
@@ -288,7 +290,7 @@ app.post(
       console.error("Error creating outgoing payment:", err);
       return res.status(500).json({ error: err });
     }
-  }
+  },
 );
 
 app.post(
@@ -296,7 +298,7 @@ app.post(
   async (req: Request, res: Response): Promise<any> => {
     const input = req.body as ResourceRequestArgs;
 
-    console.log("** input");
+    console.log(">> input");
     console.log(input);
     try {
       const result = await getOutgoingPayment(input);
@@ -305,7 +307,7 @@ app.post(
       console.error("Error getting outgoing payment:", err);
       return res.status(500).json({ error: err });
     }
-  }
+  },
 );
 
 app.post(
@@ -313,7 +315,7 @@ app.post(
   async (req: Request, res: Response): Promise<any> => {
     const input = req.body as any;
 
-    console.log("** input");
+    console.log(">> input");
     console.log(input);
     try {
       const result = await listOutgoingPayments(input);
@@ -322,7 +324,7 @@ app.post(
       console.error("Error listing outgoing payments:", err);
       return res.status(500).json({ error: err });
     }
-  }
+  },
 );
 // ============== ERROR HANDLING ==============
 
@@ -370,42 +372,42 @@ app.listen(PORT, () => {
   console.log("\n📋 Available endpoints:");
   console.log("  POST   /api/wallet-address_get       - Get wallet details");
   console.log(
-    "  POST   /api/grant_request            - Request a grant for access token"
+    "  POST   /api/grant_request            - Request a grant for access token",
   );
   console.log(
-    "  POST   /api/grant_continue           - Continue to get an access token from a pending grant"
+    "  POST   /api/grant_continue           - Continue to get an access token from a pending grant",
   );
   console.log("  POST   /api/grant_cancel             - Cancel a grant");
   console.log(
-    "  POST   /api/token_rotate             - Rotate an access token"
+    "  POST   /api/token_rotate             - Rotate an access token",
   );
   console.log(
-    "  POST   /api/token_revoke             - Revoke an access token"
+    "  POST   /api/token_revoke             - Revoke an access token",
   );
   console.log(
-    "  POST   /api/incoming-payment_create  - Create an incoming payment resource"
+    "  POST   /api/incoming-payment_create  - Create an incoming payment resource",
   );
   console.log(
-    "  POST   /api/incoming-payment_get     - Get an incoming payment resource"
+    "  POST   /api/incoming-payment_get     - Get an incoming payment resource",
   );
   console.log(
-    "  POST   /api/incoming-payment_complete - Complete an incoming payment resource"
+    "  POST   /api/incoming-payment_complete - Complete an incoming payment resource",
   );
   console.log(
-    "  POST   /api/incoming-payment_list    - List incoming payment resources"
+    "  POST   /api/incoming-payment_list    - List incoming payment resources",
   );
   console.log(
-    "  POST   /api/quote_create             - Create a quote resource"
+    "  POST   /api/quote_create             - Create a quote resource",
   );
   console.log("  POST   /api/quote_get                - Get a quote resource");
   console.log(
-    "  POST   /api/outgoing-payment_create  - Create an outgoing payment resource"
+    "  POST   /api/outgoing-payment_create  - Create an outgoing payment resource",
   );
   console.log(
-    "  POST   /api/outgoing-payment_get     - Get an outgoing payment resource"
+    "  POST   /api/outgoing-payment_get     - Get an outgoing payment resource",
   );
   console.log(
-    "  POST   /api/outgoing-payment_list    - List outgoing payment resources"
+    "  POST   /api/outgoing-payment_list    - List outgoing payment resources",
   );
 });
 

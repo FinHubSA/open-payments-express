@@ -1,150 +1,173 @@
 # Open Payments Express App
 
-A lightweight application to show the Open Payments API functions.
+A lightweight teaching application for exploring the [Open Payments API](https://openpayments.dev/overview/getting-started/). Use it to understand **what to send** when calling each API, and **what comes back** in the response.
+
+The app wraps the official [Node.js Open Payments SDK](https://github.com/interledger/open-payments-node) (`@interledger/open-payments`). SDK calls live in [`services/open-payments.ts`](services/open-payments.ts). The Express server in [`server.ts`](server.ts) exposes them as local REST endpoints. The browser UI in [`index.html`](index.html) renders forms from JSON schemas so you can try each API interactively.
+
+> **New to web development?** Start with the [wiki learning path](wiki/README.md), which introduces HTML, CSS, JavaScript, Git, Node.js, and Express using this repository as the example project.
+
+## What is Open Payments?
+
+[Open Payments](https://openpayments.dev/overview/getting-started/) is an open REST API standard for account servicing entities (banks, digital wallets, mobile money providers). Applications use it to:
+
+- Look up **wallet addresses** (public account identifiers, like email addresses for money)
+- Request **grants** (permission to act on someone's account via GNAP)
+- Create **incoming payments** (receive money)
+- Create **quotes** and **outgoing payments** (send money)
+
+Open Payments does not move funds itself—it issues **payment instructions** to the account provider, which executes settlement separately.
+
+## Learning goals
+
+| Goal                            | Where to learn it                                                 |
+| ------------------------------- | ----------------------------------------------------------------- |
+| Understand API input parameters | Forms in the UI, schemas in `public/schemas/`, tables below       |
+| Understand API response fields  | JSON response panel in the UI, server terminal logs, tables below |
+| See how the SDK is called       | [`services/open-payments.ts`](services/open-payments.ts)          |
+| See how HTTP maps to SDK calls  | [`server.ts`](server.ts)                                          |
+| Web development fundamentals    | [wiki/](wiki/README.md)                                           |
 
 ## Requirements
 
-Before you begin, you need to install the following tools:
-
 - [Visual Studio Code](https://code.visualstudio.com/)
-- [Node (>= v18.18)](https://nodejs.org/en/download/)
+- [Node.js (>= v18.18)](https://nodejs.org/en/download/)
 - [Git](https://git-scm.com/downloads)
 
-## 🚀 Quickstart
+## Quickstart
 
-### 1. Clone the repository
+### 1. Fork and clone
 
-Open `Visual Studio Code` and open a `terminal` in your Visual Studio Code. Then run this command below:
+Fork [FinHubSA/open-payments-express](https://github.com/FinHubSA/open-payments-express), then clone **your** fork:
 
 ```bash
-git clone git@github.com:interledger/open-payments-playground.git
+git clone https://github.com/YOUR_USERNAME/open-payments-express.git
+cd open-payments-express
 ```
 
-### 2. Install Dependencies
+### 2. Install dependencies
 
 ```bash
 npm install
 ```
 
-### 3. Setup `.env` file
+### 3. Configure `.env`
 
-- Follow this tutorial to setup your [test wallet](https://openpayments.dev/sdk/before-you-begin/)
-- Create a new `.env` file, right next to the `.env.example` and copy all code from `.env.example` to `.env`.
-- Copy key ID and the wallet address into the `.env` file.
-- Put the private key in the root folder i.e. open-payments-express/private.key.
-  > Note: The private key file was saved and generated automatically when you created `Developer Keys` for your wallet address.
+1. Follow [Before you begin](https://openpayments.dev/sdk/before-you-begin/) to create a test wallet.
+2. Copy `.env.example` to `.env`.
+3. Set your wallet address and key ID.
+4. Place your private key at `private.key` in the project root (generated when you create Developer Keys).
 
-### 4. Start the Server
+```env
+OPEN_PAYMENTS_CLIENT_ADDRESS="https://your-wallet.example.com/username"
+OPEN_PAYMENTS_SECRET_KEY_PATH="private.key"
+OPEN_PAYMENTS_KEY_ID="your-key-id"
+```
+
+Wallet addresses may use the `$` shorthand (e.g. `$wallet.example.com/alice`); the app converts them to `https://` automatically.
+
+### 4. Start the development server
 
 ```bash
-# Development mode with auto-restart
 npm run dev
 ```
 
-This command does two things:
+Open [http://localhost:3001](http://localhost:3001). The server logs inputs (`>> input`) and SDK outputs (`<< ...`) in the terminal—useful when learning what each call returns.
 
-- Runs `tsx scripts/generate-schemas.ts`, which generates the latest schemas and TypeScript types from the definitions in `openapi`. It puts these files in the `public/schemas` folder and the `types` folder respectively.
-- Starts the development server with `tsx watch`, so changes to `.ts` files auto-restart the server.
-
-The server will start on `http://localhost:3001`
-
-### 5. Run the Production Build
-
-Use these commands for a production-style run:
+### 5. Production build
 
 ```bash
 npm run build
 npm start
 ```
 
-- `npm run build` compiles `server.ts` into `dist/server.js` and also generates the schemas.
-- `npm start` runs the built server from the `dist` folder.
-
-## 📂 Project Structure
+## How the app is layered
 
 ```
-├── openapi/ # JSON Schemas for the different servers (reference only)
-│ ├── auth-server.json # Auth server schema
-│ ├── resource-server.json # Resource server schema
-│ └── wallet-address-server.json # Wallet address server schema
-│
-├── scripts/ # Build scripts for generating artifacts
-│ └── generate-schemas.ts # Generates JSON schemas from TypeScript types
-│
-├── services/ # Service layer for making Open Payments requests
-│ └── open-payments.ts # Implementation of Open Payments API calls
-│
-├── types/ # Legacy generated types (deprecated)
-│ ├── access-incoming.d.ts
-│ ├── access-outgoing.d.ts
-│ └── ...
-│
-├── server.ts # Express server with API endpoints
-│
-├── index.html # The main UI file for displaying the frontend
-│
-├── public/ # Frontend demo
-│ ├── schemas/ # Generated JSON schemas for form rendering
-│ │ ├── wallet-address_get.json
-│ │ ├── grant_request.json
-│ │ ├── grant_continue.json
-│ │ ├── grant_cancel.json
-│ │ ├── token_rotate.json
-│ │ ├── token_revoke.json
-│ │ ├── incoming-payment_create.json
-│ │ ├── incoming-payment_get.json
-│ │ ├── incoming-payment_complete.json
-│ │ ├── incoming-payment_list.json
-│ │ ├── quote_create.json
-│ │ ├── quote_get.json
-│ │ ├── outgoing-payment_create.json
-│ │ ├── outgoing-payment_get.json
-│ │ └── outgoing-payment_list.json
-│ │
-│ ├── lib/ # JavaScript libraries for the UI
-│ │ ├── json-text-editor.min.js # For the <andypf-json-viewer/> element
-│ │ └── json-ui-editor.min.js # For rendering HTML forms from schemas
-│ │
-│ ├── script.js # Logic for rendering forms, submitting requests, and history
-│ ├── styles.css # The styling
-│ ├── logo.png # Application logo
-│ └── favicon.svg # Application favicon
-│
-└── ... # Other files for the project
+Browser (index.html, public/script.js)
+    │  POST /api/<action>  { JSON body }
+    ▼
+Express (server.ts)
+    │  parses req.body, calls service function
+    ▼
+Open Payments service (services/open-payments.ts)
+    │  uses @interledger/open-payments SDK
+    ▼
+Open Payments servers (wallet address, auth, resource)
 ```
 
-## 🔧 Schema Generation
+Every successful API call returns:
 
-The application uses a custom schema generation approach that leverages TypeScript types from the `@interledger/open-payments` package.
-
-### How It Works
-
-The `scripts/generate-schemas.ts` script:
-
-1. **Imports TypeScript types** from `@interledger/open-payments/dist/client/index.d.ts` and `@interledger/open-payments/dist/types.d.ts`
-2. **Creates intersection types** by combining multiple TypeScript types (e.g., `ResourceRequestArgs & CreateIncomingPaymentArgs`)
-3. **Generates JSON schemas** using `typescript-json-schema` to convert TypeScript types to JSON Schema format
-4. **Outputs schemas** to `public/schemas/` for use in the UI forms
-
-### Naming Convention
-
-API endpoint schemas follow this naming pattern:
-
-```
-<resource-type>_<action-type>.json
+```json
+{
+  "data": {
+    /* Open Payments resource or grant object */
+  }
+}
 ```
 
-Where:
+Errors return HTTP `500` with `{ "error": ... }`.
 
-- **`<resource-type>`**: Kebab-case resource name (e.g., `wallet-address`, `incoming-payment`, `outgoing-payment`)
-- **`<action-type>`**: Lowercase action from the client route method (e.g., `get`, `create`, `list`, `request`, `rotate`)
+---
 
-Examples:
+### Typical payment flow
 
-- `wallet-address_get.json` - Get wallet address
-- `grant_request.json` - Request a grant
-- `incoming-payment_create.json` - Create an incoming payment
-- `outgoing-payment_list.json` - List outgoing payments
-- `quote_get.json` - Get a quote
+```mermaid
+sequenceDiagram
+    participant App as This app
+    participant Auth as Auth server
+    participant Res as Resource server
 
-This naming convention maps each schema file directly to a client route, making it easier to find the schema for a specific API action.
+    App->>App: wallet-address_get
+    App->>Auth: grant_request (incoming-payment)
+    Auth-->>App: access_token
+    App->>Res: incoming-payment_create
+    Res-->>App: incoming payment id
+
+    Note over App: Payer side
+    App->>Auth: grant_request (outgoing-payment + interact)
+    Auth-->>App: interact.redirect
+    Note over App: User approves in browser
+    App->>Auth: grant_continue
+    Auth-->>App: access_token
+    App->>Res: quote_create
+    App->>Res: outgoing-payment_create
+```
+
+1. **Get wallet address** — discover `authServer` and `resourceServer`.
+2. **Request grant** — get `accessToken` for the operation you need.
+3. **Create resource** — incoming payment, quote, or outgoing payment.
+4. For outgoing payments with user approval: **grant with interact** → user redirect → **grant continue** → create payment.
+
+## Using the interactive UI
+
+1. Expand an accordion section (Wallet Address, Grants, Incoming Payments, etc.).
+2. Fill the generated form (built from `public/schemas/*.json`).
+3. Click **Send** — the app POSTs to `/api/<action>` and shows the JSON response.
+4. Watch the terminal for logged inputs and SDK responses.
+
+## Project structure
+
+```
+├── services/open-payments.ts   # SDK wrappers (inputs → API → responses)
+├── server.ts                   # Express REST routes
+├── index.html                  # Frontend UI
+├── public/
+│   ├── schemas/                # JSON Schema for each API form
+│   ├── script.js               # Form rendering and API calls
+│   └── styles.css
+├── scripts/generate-schemas.ts # Generates schemas from SDK TypeScript types
+├── wiki/                       # Web development learning path
+└── .env.example
+```
+
+## Schema generation
+
+`npm run generate:schema` reads TypeScript types from `@interledger/open-payments` and writes JSON schemas to `public/schemas/` using the pattern `<resource>_<action>.json` (e.g. `incoming-payment_create.json`). The UI uses these to show the correct input fields for each API.
+
+## Further reading
+
+- [Open Payments — Getting started](https://openpayments.dev/overview/getting-started/)
+- [Open Payments SDK (Node.js)](https://github.com/interledger/open-payments-node)
+- [Grant negotiation](https://openpayments.dev/overview/identity-and-access-management/grant-negotiation-and-authorization/)
+- [Accept a one-time payment (guide)](https://openpayments.dev/guides/accept-one-time-payment/)
+- [Web development wiki](wiki/README.md)
